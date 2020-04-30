@@ -1,0 +1,6 @@
+**/*.txt.user
+**/*.autosave
+**/.~*
+**/.idea/*
+**/build/*
+**/cmake-build-*
