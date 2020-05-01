@@ -12,9 +12,20 @@ QuadSolver::QuadSolver(shared_ptr<Buffer<QuadCoeffs>> inputBuf,
 {
 }
 
+void QuadSolver::stopLater()
+{
+    // Set work flag as false
+    ProducerConsumer::stopLater();
+    // Ware threads up to interrupt buffer operations
+    _inputBuf->notifyAll();
+    _outputBuf->notifyAll();
+}
+
 void QuadSolver::worker()
 {
     // Returns if stopLater() had been called and input buffer is empty
+    const bool& workFlag = getWorkFlag();
+
     while(true)
     {
         QuadEquation equation;
@@ -22,7 +33,7 @@ void QuadSolver::worker()
 
         try
         {
-            coeffs = _inputBuf->getAndPop(getWorkFlag());
+            coeffs = _inputBuf->getAndPop(workFlag);
         }
         catch(...)
         {
@@ -31,7 +42,15 @@ void QuadSolver::worker()
 
         equation.coeffs = coeffs;
         equation.roots = calcRoots(coeffs);
-        _outputBuf->emplace(equation);
+
+        try
+        {
+            _outputBuf->emplace(equation, workFlag);
+        }
+        catch(...)
+        {
+            break;
+        }
     }
 }
 

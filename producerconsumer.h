@@ -10,14 +10,14 @@ public:
     virtual ~ProducerConsumer();
 
     // Starts worker() function in thread
-    virtual void start();
+    void start();
     // Joins to worker thread
-    virtual void join();
+    void join();
+    // Set work flag as false
+    virtual void stopLater();
 
     // Returns reference to work flag
     const bool& getWorkFlag() const;
-    // Set work flag as false
-    void stopLater();
 
 private:
     // Starts in _workerThread by start() call

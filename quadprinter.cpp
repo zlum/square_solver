@@ -10,6 +10,14 @@ QuadPrinter::QuadPrinter(std::shared_ptr<Buffer<QuadEquation>> inputBuf):
 {
 }
 
+void QuadPrinter::stopLater()
+{
+    // Set work flag as false
+    ProducerConsumer::stopLater();
+    // Ware threads up to interrupt buffer operations
+    _buf->notifyAll();
+}
+
 void QuadPrinter::worker()
 {
     // Returns if stopLater() had been called and input buffer is empty

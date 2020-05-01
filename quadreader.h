@@ -17,6 +17,9 @@ public:
                         std::shared_ptr<Buffer<QuadCoeffs>> outputBuf);
     virtual ~QuadReader() = default;
 
+    // ProducerConsumer
+    virtual void stopLater() override;
+
 private:
     // ProducerConsumer
     virtual void worker() override;

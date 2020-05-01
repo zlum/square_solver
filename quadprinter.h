@@ -15,6 +15,9 @@ public:
     explicit QuadPrinter(std::shared_ptr<Buffer<QuadEquation>> inputBuf);
     virtual ~QuadPrinter() = default;
 
+    // ProducerConsumer
+    virtual void stopLater() override;
+
 private:
     // ProducerConsumer
     virtual void worker() override;

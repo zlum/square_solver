@@ -18,6 +18,8 @@ public:
                         std::shared_ptr<Buffer<QuadEquation>> outputBuf);
     virtual ~QuadSolver() = default;
 
+    virtual void stopLater() override;
+
 private:
     // ProducerConsumer
     virtual void worker() override;

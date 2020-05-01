@@ -13,6 +13,14 @@ QuadReader::QuadReader(int argc, char* argv[],
 {
 }
 
+void QuadReader::stopLater()
+{
+    // Set work flag as false
+    ProducerConsumer::stopLater();
+    // Ware threads up to interrupt buffer operations
+    _buf->notifyAll();
+}
+
 void QuadReader::worker()
 {
     // Read 3 values per step. Skips argv[0] cause it is working directory
@@ -23,10 +31,11 @@ void QuadReader::worker()
     {
         try
         {
-            _buf->emplace(readCoeffs(i, _argc, _argv));
+            _buf->emplace(readCoeffs(i, _argc, _argv), getWorkFlag());
         }
         catch(...)
         {
+            break;
         }
     }
 }
