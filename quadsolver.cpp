@@ -69,8 +69,8 @@ pair<double, double> QuadSolver::calcRoots(const QuadCoeffs& coeffs)
         // Two roots
         double sqrtDsc = sqrt(discriminant);
 
-        return {calcRoot(sqrtDsc, false, a, b),
-                calcRoot(sqrtDsc, true, a, b)};
+        return {calcRoot(sqrtDsc, true, a, b),
+                calcRoot(sqrtDsc, false, a, b)};
     }
 
     if(discriminant == 0)
