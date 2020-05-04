@@ -15,7 +15,7 @@ class QuadReader:
 public:
     explicit QuadReader(int argc, char* argv[],
                         std::shared_ptr<Buffer<QuadCoeffs>> outputBuf);
-    virtual ~QuadReader() = default;
+    virtual ~QuadReader();
 
     // ProducerConsumer
     virtual void stopLater() override;

@@ -16,7 +16,7 @@ class QuadSolver:
 public:
     explicit QuadSolver(std::shared_ptr<Buffer<QuadCoeffs>> inputBuf,
                         std::shared_ptr<Buffer<QuadEquation>> outputBuf);
-    virtual ~QuadSolver() = default;
+    virtual ~QuadSolver();
 
     virtual void stopLater() override;
 

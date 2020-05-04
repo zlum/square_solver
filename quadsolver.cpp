@@ -12,6 +12,12 @@ QuadSolver::QuadSolver(shared_ptr<Buffer<QuadCoeffs>> inputBuf,
 {
 }
 
+QuadSolver::~QuadSolver()
+{
+    // Join the worker thread to avoid worker() execution after this destructor
+    join();
+}
+
 void QuadSolver::stopLater()
 {
     // Set work flag as false

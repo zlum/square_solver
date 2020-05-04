@@ -10,6 +10,12 @@ QuadPrinter::QuadPrinter(std::shared_ptr<Buffer<QuadEquation>> inputBuf):
 {
 }
 
+QuadPrinter::~QuadPrinter()
+{
+    // Join the worker thread to avoid worker() execution after this destructor
+    join();
+}
+
 void QuadPrinter::stopLater()
 {
     // Set work flag as false

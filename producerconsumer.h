@@ -11,7 +11,7 @@ public:
 
     // Starts worker() function in thread
     void start();
-    // Joins to worker thread
+    // Joins to the worker thread if it is joinable
     void join();
     // Set work flag as false
     virtual void stopLater();

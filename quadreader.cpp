@@ -14,6 +14,12 @@ QuadReader::QuadReader(int argc, char* argv[],
 {
 }
 
+QuadReader::~QuadReader()
+{
+    // Join the worker thread to avoid worker() execution after this destructor
+    join();
+}
+
 void QuadReader::stopLater()
 {
     // Set work flag as false

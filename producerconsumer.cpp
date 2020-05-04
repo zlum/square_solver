@@ -10,10 +10,7 @@ ProducerConsumer::ProducerConsumer():
 
 ProducerConsumer::~ProducerConsumer()
 {
-    if(_workerThread->joinable())
-    {
-        _workerThread->join();
-    }
+    join();
 
     delete _workerThread;
 }
@@ -25,7 +22,10 @@ void ProducerConsumer::start()
 
 void ProducerConsumer::join()
 {
-    _workerThread->join();
+    if(_workerThread->joinable())
+    {
+        _workerThread->join();
+    }
 }
 
 const bool& ProducerConsumer::getWorkFlag() const

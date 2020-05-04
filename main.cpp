@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
             calcElapsedMS(begin) << " ms" << endl;
 #endif // DBG_SHOW_ELAPSED
 
-    // Producers and Consumers threads also joins in ~ProducerConsumer()
+    // Producers and Consumers threads also joins in destructors
 
     return 0;
 }
