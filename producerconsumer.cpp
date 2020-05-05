@@ -22,6 +22,8 @@ void ProducerConsumer::start()
 
 void ProducerConsumer::join()
 {
+    if(_workerThread == nullptr) return;
+
     if(_workerThread->joinable())
     {
         _workerThread->join();
