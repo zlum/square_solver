@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <thread>
 
 // Abstract class with worker thread managment
@@ -24,6 +25,6 @@ private:
     virtual void worker() = 0;
 
 private:
-    std::thread* _workerThread;
+    std::unique_ptr<std::thread> _workerThread;
     bool _workFlag;
 };

@@ -11,13 +11,11 @@ ProducerConsumer::ProducerConsumer():
 ProducerConsumer::~ProducerConsumer()
 {
     join();
-
-    delete _workerThread;
 }
 
 void ProducerConsumer::start()
 {
-    _workerThread = new thread(&ProducerConsumer::worker, this);
+    _workerThread = make_unique<thread>(&ProducerConsumer::worker, this);
 }
 
 void ProducerConsumer::join()
