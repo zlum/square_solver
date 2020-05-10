@@ -74,9 +74,10 @@ bool BigNumberBuilder::append(char symbol)
 
 BigNumber BigNumberBuilder::build()
 {
-    if(_numIntPart.empty())
+    while(_numIntPart.back() == 0)
     {
-        _numIntPart.emplace_back(0);
+        _numIntPart.pop_back();
+        --_fractPos;
     }
 
     std::reverse(_numIntPart.begin(), _numIntPart.end());
