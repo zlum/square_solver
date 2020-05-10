@@ -7,6 +7,11 @@ find_package(Threads REQUIRED)
 set(CMAKE_CXX_STANDARD 14)
 
 set(SRC
+    bignumber.cpp
+    bignumber.h
+    bignumberbuilder.cpp
+    bignumberbuilder.h
+    bignumbertypes.h
     buffer.hpp
     main.cpp
     producerconsumer.cpp
