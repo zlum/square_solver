@@ -16,4 +16,12 @@ namespace bigNumber
         inf,
         normal
     };
+
+    enum class ComareRes: int
+    {
+        less,
+        equal,
+        greater
+    };
+
 } // namespace bigNumber

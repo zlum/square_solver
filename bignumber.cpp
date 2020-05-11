@@ -55,9 +55,15 @@ BigNumber BigNumber::operator +(const BigNumber& other) const
         num._fractPos = other._fractPos;
     }
 
-    num._numIntPart = sumOfVectors(_numIntPart,
-                                   other._numIntPart, extender,
-                                   lShift, rShift);
+    vector<uint8_t> sum = sumOfVectors(_numIntPart,
+                                       other._numIntPart, extender,
+                                       lShift, rShift);
+
+    size_t zeroPos = trackZeroes(sum, 0);
+    size_t driftPos = min(zeroPos, num._fractPos);
+
+    num._numIntPart.insert(num._numIntPart.begin(), sum.begin() + driftPos, sum.end());
+    num._fractPos -= driftPos; // TODO: Check
 
     if(extender != 0)
     {
@@ -101,17 +107,12 @@ BigNumber BigNumber::operator -(const BigNumber& other) const
                                         lShift, rShift);
     }
 
-
-//    if(narrower != 0)
-//    {
-//    }
-
     return num;
 }
 
 BigNumber BigNumber::operator *(const BigNumber& other) const
 {
-    // FIXME: Atfter * 0 pop vector
+    // FIXME: After * 0 pop vector
     BigNumber num;
     uint8_t extender = 0;
 
@@ -126,8 +127,13 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
 
     num._fractPos = _fractPos + other._fractPos;
 
-    // FIXME: Add trim()
-    num._numIntPart = prodOfVectors(_numIntPart, other._numIntPart, extender);
+    vector<uint8_t> prod = prodOfVectors(_numIntPart, other._numIntPart, extender);
+
+    size_t zeroPos = trackZeroes(prod, 0);
+    size_t driftPos = min(zeroPos, num._fractPos);
+
+    num._numIntPart.insert(num._numIntPart.begin(), prod.begin() + driftPos, prod.end());
+    num._fractPos -= driftPos; // TODO: Check
 
     if(extender != 0)
     {
@@ -152,41 +158,30 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
         num._sign = Sign::negative;
     }
 
-    if(*this == other)
-    {
-        num._numIntPart.emplace_back(1);
+    // TODO: Uncomment
+//    if(*this == other)
+//    {
+//        num._numIntPart.emplace_back(1);
+//        num._fractPos = 0;
 
-        return num;
+//        return num;
+//    }
+
+    size_t lUp = 0;
+    size_t rUp = 0;
+
+    if(_fractPos > other._fractPos)
+    {
+        rUp = _fractPos - other._fractPos;
     }
 
-//    vector<vector<uint8_t>> quotBuf;
-    vector<uint8_t> quotNum;
-    size_t rightShift = 0;
+    if(other._fractPos > _fractPos)
+    {
+        lUp = other._fractPos - _fractPos;
+    }
 
-    // FIXME: reserve
-//    quotBuf.reserve()
-
-//    if(lNum < rNum)
-//    {
-//        if(rNum.size() == lNum.size())
-//        {
-//            rightShift = 1;
-//        }
-//        else
-//        {
-//            rightShift = rNum.size() - lNum.size();
-//        }
-//    }
-
-//    // FIXME: Check everywere and mb not here
-//    if(!_numFractPart.empty() || !other._numFractPart.empty())
-//    {
-//        num._numFractPart = quotOfVectors(_numFractPart,
-//                                          other._numFractPart, narrower);
-//    }
-
-//    num._numIntPart = quotOfVectors(_numIntPart,
-//                                    other._numIntPart, narrower);
+    num._numIntPart = quotOfVectors(_numIntPart, other._numIntPart, lUp, rUp, narrower);
+    num._fractPos = narrower; //abs(int64_t(_fractPos - other._fractPos)); // TODO: Rename
 
     return num;
 }
@@ -198,48 +193,19 @@ bool BigNumber::operator >(const BigNumber& other) const
         return true;
     }
 
-    if(_numIntPart.size() - _fractPos < other._numIntPart.size() - other._fractPos)
+    // FIXME: Copypaste and conversion
+    if(int64_t(_numIntPart.size() - _fractPos) < int64_t(other._numIntPart.size() - other._fractPos))
     {
         return false;
     }
 
-    if(_numIntPart.size() - _fractPos > other._numIntPart.size() - other._fractPos)
+    if(int64_t(_numIntPart.size() - _fractPos) > int64_t(other._numIntPart.size() - other._fractPos))
     {
         return true;
     }
 
-    // FIXME: Copypaste
-    uint32_t lShift = 0;
-    uint32_t rShift = 0;
-    size_t i = 0;
-
-    if(_numIntPart.size() > other._numIntPart.size())
-    {
-        lShift = _numIntPart.size() - other._numIntPart.size();
-        i = other._numIntPart.size();
-    }
-    else
-    {
-        rShift = other._numIntPart.size() - _numIntPart.size();
-        i = _numIntPart.size();
-    }
-
-    while(i > 0)
-    {
-        --i;
-
-        if(_numIntPart.at(i + lShift) > other._numIntPart.at(i + rShift))
-        {
-            return true;
-        }
-
-        if(_numIntPart.at(i + lShift) < other._numIntPart.at(i + rShift))
-        {
-            return false;
-        }
-    }
-
-    return _fractPos > other._fractPos;
+    return isVectorGreater(_numIntPart, _fractPos,
+                           other._numIntPart, other._fractPos);
 }
 
 bool BigNumber::operator <(const BigNumber& other) const
@@ -249,49 +215,21 @@ bool BigNumber::operator <(const BigNumber& other) const
         return true;
     }
 
-    if(_numIntPart.size() - _fractPos > other._numIntPart.size() - other._fractPos)
+    if(int64_t(_numIntPart.size() - _fractPos) > int64_t(other._numIntPart.size() - other._fractPos))
     {
         return false;
     }
 
-    if(_numIntPart.size() - _fractPos < other._numIntPart.size() - other._fractPos)
+    if(int64_t(_numIntPart.size() - _fractPos) < int64_t(other._numIntPart.size() - other._fractPos))
     {
         return true;
     }
 
-    uint32_t lShift = 0;
-    uint32_t rShift = 0;
-    size_t i = 0;
-
-    if(_numIntPart.size() > other._numIntPart.size())
-    {
-        lShift = _numIntPart.size() - other._numIntPart.size();
-        i = other._numIntPart.size();
-    }
-    else
-    {
-        rShift = other._numIntPart.size() - _numIntPart.size();
-        i = _numIntPart.size();
-    }
-
-    while(i > 0)
-    {
-        --i;
-
-        if(_numIntPart.at(i + lShift) < other._numIntPart.at(i + rShift))
-        {
-            return true;
-        }
-
-        if(_numIntPart.at(i + lShift) > other._numIntPart.at(i + rShift))
-        {
-            return false;
-        }
-    }
-
-    return _fractPos < other._fractPos;
+    return isVectorLesser(_numIntPart, _fractPos,
+                          other._numIntPart, other._fractPos);
 }
 
+// TODO: RM?
 bool BigNumber::operator ==(const BigNumber& other) const
 {
     // TODO: Check
@@ -335,18 +273,35 @@ ostream& operator <<(ostream& os, const BigNumber& num)
         os << '-';
     }
 
-    size_t i = num._numIntPart.size();
+    size_t i;
+    const auto& loc = use_facet<numpunct<char>>(cout.getloc());
+
+    if(num._fractPos >= num._numIntPart.size())
+    {
+        os << '0';
+        os << loc.decimal_point();
+        i = num._fractPos;
+    }
+    else
+    {
+        i = num._numIntPart.size();
+    }
 
     while(i > 0)
     {
         --i;
 
-        os << int(num._numIntPart.at(i));
+        if(i < num._numIntPart.size())
+        {
+            os << int(num._numIntPart.at(i));
+        }
+        else
+        {
+            os << '0';
+        }
 
         if(i == num._fractPos && i != 0)
         {
-            const auto& loc = use_facet<numpunct<char>>(cout.getloc());
-
             os << loc.decimal_point();
         }
     }
@@ -359,14 +314,30 @@ void BigNumber::setSign(Sign sign)
     _sign = sign;
 }
 
+// NOTE: Dupe from builder
+void BigNumber::popZeroes(vector<uint8_t>& vec)
+{
+    while(!vec.empty())
+    {
+        if(vec.back() != 0)
+        {
+            break;
+        }
+
+        vec.pop_back();
+    }
+}
+
 vector<uint8_t> BigNumber::sumOfVectors(const vector<uint8_t>& lNum,
                                         const vector<uint8_t>& rNum,
                                         uint8_t& extender,
-                                        uint32_t lShift,
+                                        uint32_t lShift, // TODO: size_t?
                                         uint32_t rShift)
 {
     size_t maxSize = max(lNum.size() + lShift, rNum.size() + rShift);
-    vector<uint8_t> sumNum(maxSize);
+    vector<uint8_t> sumNum;
+    sumNum.reserve(maxSize);
+    size_t drift = 0;
 
     for(size_t i = 0; i < maxSize; ++i)
     {
@@ -396,7 +367,14 @@ vector<uint8_t> BigNumber::sumOfVectors(const vector<uint8_t>& lNum,
             extender = 0;
         }
 
-        sumNum.at(i) = sum;
+//        if(sumNum.empty() && sum == 0)
+//        {
+//            ++drift;
+//        }
+//        else
+        {
+            sumNum.emplace_back(sum);
+        }
     }
 
     return sumNum;
@@ -404,21 +382,12 @@ vector<uint8_t> BigNumber::sumOfVectors(const vector<uint8_t>& lNum,
 
 vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
                                          const vector<uint8_t>& rNum,
-                                         uint8_t& narrower,
+                                         uint8_t& narrower, // TODO: RM
                                          uint32_t lShift,
                                          uint32_t rShift)
 {
     size_t maxSize = max(lNum.size() + lShift, rNum.size() + rShift);
-    vector<uint8_t> diffNum(maxSize); // TODO: Double check
-
-//    // FIXME: Shitcode
-//    const vector<uint8_t>& topNum = lNum.size() < rNum.size() ? rNum : lNum;
-//    const vector<uint8_t>& botNum = lNum.size() < rNum.size() ? lNum : rNum;
-
-//    if(lNum.size() < rNum.size())
-//    {
-//        swap(lShift, rShift);
-//    }
+    vector<uint8_t> diffNum(maxSize);
 
     for(size_t i = 0; i < maxSize; ++i)
     {
@@ -458,6 +427,65 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
 
         diffNum.at(i) = diff;
     }
+
+    popZeroes(diffNum);
+
+    return diffNum;
+}
+
+vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
+                                              const vector<uint8_t>& rNum,
+                                              uint32_t lShift,
+                                              uint32_t rShift)
+{
+    size_t maxSize = max(lNum.size() + lShift, rNum.size() + rShift);
+    vector<uint8_t> diffNum(maxSize);
+    uint8_t narrower = 0;
+
+    size_t i = maxSize;
+
+    while(i > 0)
+    {
+        int8_t diff = 0;
+        uint8_t lval = 0;
+        uint8_t rval = 0;
+
+        --i;
+
+        if(i >= lShift && i < lNum.size() + lShift)
+        {
+            lval = lNum.at(i - lShift);
+        }
+
+        if(i >= rShift && i < rNum.size() + rShift)
+        {
+            rval = rNum.at(i - rShift);
+        }
+
+        diff = lval - rval - narrower;
+
+        if(diff < 0)
+        {
+            narrower = 1;
+
+            if(i == 0)
+            {
+                diff = abs(diff);
+            }
+            else
+            {
+                diff += 10;
+            }
+        }
+        else
+        {
+            narrower = 0;
+        }
+
+        diffNum.at(i) = diff;
+    }
+
+//    popZeroes(diffNum);
 
     return diffNum;
 }
@@ -502,7 +530,7 @@ vector<uint8_t> BigNumber::prodOfVectors(const vector<uint8_t>& lNum,
     // FIXME: Zero case
     vector<vector<uint8_t>> prodBuf;
     vector<uint8_t> prodNum;
-    uint32_t shift = 0;
+    uint32_t shift = 0; // TODO: Rename
 
     prodBuf.reserve(rNum.size());
 //    prodNum.reserve(lNum.size() + rNum.size() - 1);
@@ -529,60 +557,334 @@ vector<uint8_t> BigNumber::prodOfVectors(const vector<uint8_t>& lNum,
     return prodNum;
 }
 
+size_t BigNumber::trackZeroes(const vector<uint8_t>& vec, size_t pos)
+{
+    for(size_t i = pos; i < vec.size(); ++i)
+    {
+        if(vec.at(i) != 0)
+        {
+            return i;
+        }
+    }
+
+    return vec.size();
+}
+
 vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
                                          const vector<uint8_t>& rNum,
-                                         uint8_t& narrower)
+                                         size_t lUp,
+                                         size_t rUp,
+                                         uint8_t& narrower) // TODO: RM
 {
-    // FIXME: Zero case
+    // FIXME: Empty case
     vector<vector<uint8_t>> quotBuf;
     vector<uint8_t> quotNum;
-    size_t rightShift = 0;
+    size_t lShift = 0;
+    size_t rShift = 0;
 
     // FIXME: reserve
 //    quotBuf.reserve()
 
-    if(lNum < rNum)
+    if(rNum.size() > lNum.size())
     {
-        if(rNum.size() == lNum.size())
+        rShift = rNum.size() - lNum.size(); // TODO: RM
+    }
+    else
+    {
+        lShift = lNum.size() - rNum.size();
+    }
+
+    vector<uint8_t> lNumPart(lUp);
+    vector<uint8_t> rNumPart(rUp);
+
+    // Insert in reversed order
+    lNumPart.insert(lNumPart.begin(), lNum.rbegin(), lNum.rend() - lShift);
+    rNumPart.insert(rNumPart.begin(), rNum.rbegin(), rNum.rend());
+
+    size_t i = lNumPart.size();
+
+    while(true) // FIXME: ouf
+    {
+        if(isVectorLesser(lNumPart, rNumPart))
         {
-            rightShift = 1;
+            uint8_t digit;
+
+            quotNum.emplace_back(0);
+
+            if(i < lNum.size())
+            {
+                lNum.at(lNum.size() - i);
+            }
+            else
+            {
+                if(trackZeroes(lNumPart, 0) == lNumPart.size())
+                {
+                    break;
+                }
+
+                digit = 0;
+                ++narrower;
+            }
+
+            lNumPart.emplace_back(digit);
+            ++i; // FIXME: Dupe
+            continue;
+        }
+
+        size_t res = 0;
+        size_t zeroTrack = 0;
+
+        while(!isVectorLesser(lNumPart, rNumPart)) // TODO: Post?
+        {
+            lNumPart = diffOfVectors(lNumPart, rNumPart, 0, 0);
+            ++res;
+
+            zeroTrack = trackZeroes(lNumPart, zeroTrack); // TODO: Rename
+
+            if(zeroTrack == lNumPart.size())
+            {
+                // lNumPart is full of zeroes
+                lNumPart.clear();
+                break;
+            }
+        }
+
+        quotNum.emplace_back(res);
+        ++i;
+
+        if(i <= lNum.size())
+        {
+            lNumPart.emplace_back(lNum.at(lNum.size() - i));
         }
         else
+        if(lNumPart.empty() ||
+           quotNum.size() > 50) // TODO: Add precision const
         {
-            rightShift = rNum.size() - lNum.size();
+            break;
         }
     }
 
-//    do
-//    {
-
-//    }
-//    while()
-
-
-//    int norm = base / (b1.a.back() + 1);
-//    bigint a = a1.abs() * norm;
-//    bigint b = b1.abs() * norm;
-//    bigint q, r;
-//    q.a.resize(a.a.size());
-
-//    for (int i = a.a.size() - 1; i >= 0; i--) {
-//        r *= base;
-//        r += a.a[i];
-//        int s1 = r.a.size() <= b.a.size() ? 0 : r.a[b.a.size()];
-//        int s2 = r.a.size() <= b.a.size() - 1 ? 0 : r.a[b.a.size() - 1];
-//        int d = ((long long) base * s1 + s2) / b.a.back();
-//        r -= b * d;
-//        while (r < 0)
-//            r += b, --d;
-//        q.a[i] = d;
-//    }
-
-//    q.sign = a1.sign * b1.sign;
-//    r.sign = a1.sign;
-//    q.trim();
-//    r.trim();
-//    return make_pair(q, r / norm);
+    reverse(quotNum.begin(), quotNum.end());
 
     return quotNum;
 }
+
+bool BigNumber::isVectorGreater(const vector<uint8_t>& lNum,
+                                size_t lFractPos,
+                                const vector<uint8_t>& rNum,
+                                size_t rFractPos)
+{
+    // FIXME: Copypaste
+    size_t lShift = 0;
+    size_t rShift = 0;
+    size_t i = 0;
+
+    if(lNum.size() > rNum.size())
+    {
+        lShift = lNum.size() - rNum.size();
+        i = rNum.size();
+    }
+    else
+    {
+        rShift = rNum.size() - lNum.size();
+        i = lNum.size();
+    }
+
+    while(i > 0)
+    {
+        --i;
+
+        if(lNum.at(i + lShift) > rNum.at(i + rShift))
+        {
+            return true;
+        }
+
+        if(lNum.at(i + lShift) < rNum.at(i + rShift))
+        {
+            return false;
+        }
+    }
+
+    return lFractPos > rFractPos;
+}
+
+bool BigNumber::isVectorLesser(const vector<uint8_t>& lNum,
+                               size_t lFractPos,
+                               const vector<uint8_t>& rNum,
+                               size_t rFractPos)
+{
+    size_t lShift = 0;
+    size_t rShift = 0;
+    size_t i = 0;
+
+    if(lNum.size() > rNum.size())
+    {
+        lShift = lNum.size() - rNum.size();
+        i = rNum.size();
+    }
+    else
+    {
+        rShift = rNum.size() - lNum.size();
+        i = lNum.size();
+    }
+
+    while(i > 0)
+    {
+        --i;
+
+        if(lNum.at(i + lShift) < rNum.at(i + rShift))
+        {
+            return true;
+        }
+
+        if(lNum.at(i + lShift) > rNum.at(i + rShift))
+        {
+            return false;
+        }
+    }
+
+    return lFractPos < rFractPos;
+}
+
+bool BigNumber::isVectorLesser(const vector<uint8_t>& lNum,
+                               const vector<uint8_t>& rNum)
+{
+    size_t lShift = 0;
+    size_t rShift = 0;
+
+    if(lNum.size() < rNum.size())
+    {
+        return true;
+    }
+
+    uint8_t lval = 0;
+    uint8_t rval = 0;
+
+    if(lNum.size() > rNum.size())
+    {
+        rShift = lNum.size() - rNum.size();
+    }
+    else
+    {
+        lShift = rNum.size() - lNum.size();
+    }
+
+    for(size_t i = 0; i < lNum.size(); ++i)
+    {
+        if(i >= lShift && i < lNum.size() + lShift)
+        {
+            lval = lNum.at(i - lShift);
+        }
+
+        if(i >= rShift && i < rNum.size() + rShift)
+        {
+            rval = rNum.at(i - rShift);
+        }
+
+        if(lval < rval)
+        {
+            return true;
+        }
+
+        if(lval > rval)
+        {
+            return false;
+        }
+    }
+
+
+//    if(lNum.size() > rNum.size())
+//    {
+//        lShift = lNum.size() - rNum.size();
+//        i = rNum.size();
+//    }
+//    else
+//    {
+//        rShift = rNum.size() - lNum.size();
+//        i = lNum.size();
+//    }
+
+//    for(size_t i = 0; i < lNum.size(); ++i)
+//    {
+//        if(lNum.at(i + lShift) < rNum.at(i + rShift))
+//        {
+//            return true; // BUG
+//        }
+
+//        if(lNum.at(i + lShift) > rNum.at(i + rShift))
+//        {
+//            return false;
+//        }
+//    }
+
+    return false;
+}
+
+//// NOTE: Reversal
+//// TODO: Must be equal by size, rename
+//bool BigNumber::isVectorLesser(const vector<uint8_t>& lNum,
+//                               const vector<uint8_t>& rNum)
+//{
+//    if(lNum.size() < rNum.size())
+//    {
+//        return true;
+//    }
+
+//    if(lNum.size() > rNum.size())
+//    {
+//        return false;
+//    }
+
+//    for(size_t i = 0; i < lNum.size(); ++i)
+//    {
+//        if(lNum.at(i) < rNum.at(i))
+//        {
+//            return true;
+//        }
+
+//        if(lNum.at(i) > rNum.at(i))
+//        {
+//            return false;
+//        }
+//    }
+
+//    // Equal
+//    return false;
+//}
+
+//bool BigNumber::isVectorLesser(const vector<uint8_t>& lNum,
+//                               const vector<uint8_t>& rNum)
+//{
+//    // NOTE: Shift is unnecessary
+//    size_t lShift = 0;
+//    size_t rShift = 0;
+//    size_t i = 0;
+
+//    if(lNum.size() > rNum.size())
+//    {
+//        lShift = lNum.size() - rNum.size();
+//        i = rNum.size();
+//    }
+//    else
+//    {
+//        rShift = rNum.size() - lNum.size();
+//        i = lNum.size();
+//    }
+
+//    while(i > 0)
+//    {
+//        --i;
+
+//        if(lNum.at(i + lShift) < rNum.at(i + rShift))
+//        {
+//            return true;
+//        }
+
+//        if(lNum.at(i + lShift) > rNum.at(i + rShift))
+//        {
+//            return false;
+//        }
+//    }
+
+//    return false;
+//}

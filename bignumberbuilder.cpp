@@ -27,7 +27,7 @@ bool BigNumberBuilder::append(char symbol)
 
     if(symbol >= '0' && symbol <= '9')
     {
-        // TODO: std::isdigit
+        // TODO: isdigit
         // TODO: Max size constexpr
         if(_numIntPart.size() >= SIZE_MAX - 1)
         {
@@ -74,13 +74,33 @@ bool BigNumberBuilder::append(char symbol)
 
 BigNumber BigNumberBuilder::build()
 {
-    while(_numIntPart.back() == 0)
+    size_t i = 0;
+
+    while(!_numIntPart.empty() && i < _fractPos)
     {
+        if(_numIntPart.back() != 0)
+        {
+            break;
+        }
+
         _numIntPart.pop_back();
         --_fractPos;
     }
 
-    std::reverse(_numIntPart.begin(), _numIntPart.end());
+    reverse(_numIntPart.begin(), _numIntPart.end());
+
+    // NOTE: Fixed in append()
+    // TODO: Use BigNumber::pop
+    while(!_numIntPart.empty())
+    {
+        if(_numIntPart.back() != 0)
+        {
+            break;
+        }
+
+        _numIntPart.pop_back();
+//        --_fractPos;
+    }
 
     BigNumber num{_numIntPart, _fractPos,
                   _decimalPointFlag, _sign};
