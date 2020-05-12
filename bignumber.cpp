@@ -180,8 +180,8 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
         lUp = other._fractPos - _fractPos;
     }
 
-    num._numIntPart = quotOfVectors(_numIntPart, other._numIntPart, lUp, rUp, narrower);
-    num._fractPos = narrower; //abs(int64_t(_fractPos - other._fractPos)); // TODO: Rename
+    num._numIntPart = quotOfVectors(_numIntPart, other._numIntPart, 0, rUp, narrower);
+    num._fractPos = narrower - lUp; //abs(int64_t(_fractPos - other._fractPos)); // TODO: Rename
 
     return num;
 }
@@ -367,14 +367,7 @@ vector<uint8_t> BigNumber::sumOfVectors(const vector<uint8_t>& lNum,
             extender = 0;
         }
 
-//        if(sumNum.empty() && sum == 0)
-//        {
-//            ++drift;
-//        }
-//        else
-        {
-            sumNum.emplace_back(sum);
-        }
+        sumNum.emplace_back(sum);
     }
 
     return sumNum;
@@ -597,9 +590,25 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
     vector<uint8_t> lNumPart(lUp);
     vector<uint8_t> rNumPart(rUp);
 
+    int64_t prealloCounter = lShift - rUp;
+    lShift = max(int64_t(0), prealloCounter);
+
     // Insert in reversed order
+    // TODO: fix initial digit count with rUp
     lNumPart.insert(lNumPart.begin(), lNum.rbegin(), lNum.rend() - lShift);
     rNumPart.insert(rNumPart.begin(), rNum.rbegin(), rNum.rend());
+
+//    if(prealloCounter < 0)
+//    {
+//        lNumPart.resize(lNumPart.size() + abs(prealloCounter));
+//        narrower += abs(prealloCounter);
+//    }
+
+    if(lNumPart.size() < rNumPart.size())
+    {
+        narrower += rNumPart.size() - lNumPart.size();
+        lNumPart.resize(rNumPart.size());
+    }
 
     size_t i = lNumPart.size();
 
@@ -609,11 +618,16 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
         {
             uint8_t digit;
 
-            quotNum.emplace_back(0);
+            ++i; // FIXME: Dupe
 
-            if(i < lNum.size())
+            if(!quotNum.empty())
             {
-                lNum.at(lNum.size() - i);
+                quotNum.emplace_back(0);
+            }
+
+            if(i <= lNum.size())
+            {
+                digit = lNum.at(lNum.size() - i);
             }
             else
             {
@@ -627,7 +641,6 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
             }
 
             lNumPart.emplace_back(digit);
-            ++i; // FIXME: Dupe
             continue;
         }
 
@@ -636,7 +649,15 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
 
         while(!isVectorLesser(lNumPart, rNumPart)) // TODO: Post?
         {
-            lNumPart = diffOfVectors(lNumPart, rNumPart, 0, 0);
+            size_t shift = 0;
+
+            if(lNumPart.size() > rNumPart.size())
+            {
+                shift = lNumPart.size() - rNumPart.size();
+            }
+
+            // TODO: Fix shift types
+            lNumPart = diffOfVectors(lNumPart, rNumPart, 0, shift);
             ++res;
 
             zeroTrack = trackZeroes(lNumPart, zeroTrack); // TODO: Rename
@@ -649,19 +670,23 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
             }
         }
 
-        quotNum.emplace_back(res);
         ++i;
+        quotNum.emplace_back(res);
 
         if(i <= lNum.size())
         {
             lNumPart.emplace_back(lNum.at(lNum.size() - i));
+            continue;
         }
-        else
+
         if(lNumPart.empty() ||
            quotNum.size() > 50) // TODO: Add precision const
         {
             break;
         }
+
+        lNumPart.emplace_back(0);
+        ++narrower;
     }
 
     reverse(quotNum.begin(), quotNum.end());
