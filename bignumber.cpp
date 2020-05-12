@@ -27,6 +27,57 @@ BigNumber::BigNumber(vector<uint8_t> numIntPart,
 {
 }
 
+BigNumber BigNumber::sqrt() const
+{
+    static const BigNumber Big0_5{{5}, 1, false, bigNumber::Sign::positive};
+    // FIXME: Zero case
+//    if (x==0) return x;
+
+    // Newton's method
+    BigNumber dividend = *this;
+    BigNumber val = *this;
+    BigNumber last;
+
+    constexpr int prec = 10; // TODO: Precision const
+    int i = 0;
+
+    do
+    {
+        ++i;
+        last = val;
+        val = (val + dividend / val) * Big0_5;
+    }
+    while(i < prec); // Precision
+
+    return val;
+}
+
+BigNumber BigNumber::round() const
+{
+    constexpr int precision = 30;
+
+    if(_fractPos < precision)
+    {
+        return *this;
+    }
+
+    size_t pos = _numIntPart.size() - precision;
+    uint8_t digit = _numIntPart.at(pos);
+
+    std::vector<uint8_t> num;
+    num.insert(num.begin(), _numIntPart.begin() + (_numIntPart.size() - _fractPos) + pos, _numIntPart.end());
+    BigNumber res{num, _fractPos - (_numIntPart.size() - num.size()), false, bigNumber::Sign::positive};
+
+    if(digit < 5)
+    {
+        return res;
+    }
+
+    BigNumber rounder{{1}, num.size(), false, bigNumber::Sign::positive};
+
+    return res + rounder;
+}
+
 BigNumber BigNumber::operator -() const
 {
     BigNumber num(*this);
@@ -680,7 +731,7 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
         }
 
         if(lNumPart.empty() ||
-           quotNum.size() > 50) // TODO: Add precision const
+           quotNum.size() > 40) // TODO: Add precision const
         {
             break;
         }

@@ -20,6 +20,9 @@ public:
     // Changes sign of number or appends digit or decimal point
 //    bool append(char symbol);
 
+    BigNumber sqrt() const;
+    BigNumber round() const;
+
     BigNumber operator -() const;
 
     BigNumber operator +(const BigNumber& other) const;
