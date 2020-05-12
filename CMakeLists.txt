@@ -6,12 +6,16 @@ find_package(Threads REQUIRED)
 
 set(CMAKE_CXX_STANDARD 14)
 
+set(BIGNUMBER
+    bignumber/bignumber.cpp
+    bignumber/bignumber.h
+    bignumber/bignumberbuilder.cpp
+    bignumber/bignumberbuilder.h
+    bignumber/bignumbertypes.h
+)
+
 set(SRC
-    bignumber.cpp
-    bignumber.h
-    bignumberbuilder.cpp
-    bignumberbuilder.h
-    bignumbertypes.h
+    ${BIGNUMBER}
     buffer.hpp
     main.cpp
     producerconsumer.cpp
