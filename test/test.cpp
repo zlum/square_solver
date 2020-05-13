@@ -209,3 +209,27 @@ TEST(SqrtQuat, BigNumber)
 
     EXPECT_EQ(BigNumber(test1.sqrt()).round(), test1 / test2);
 }
+
+TEST(Zero, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    BigNumber test1{bnb.build()};
+
+    bnb.appendChar('0');
+    BigNumber test2{bnb.build()};
+
+    bnb.appendStr("000000000000000000000000000000000000000000000000000");
+    BigNumber test3{bnb.build()};
+
+    bnb.appendStr("000000000000000000.000000000000000000000000000000000");
+    BigNumber test4{bnb.build()};
+
+    EXPECT_TRUE(test1.isZero());
+    EXPECT_TRUE(test2.isZero());
+    EXPECT_TRUE(test3.isZero());
+    EXPECT_TRUE(test4.isZero());
+    EXPECT_EQ(test1, test2);
+    EXPECT_EQ(test2, test3);
+    EXPECT_EQ(test3, test4);
+}

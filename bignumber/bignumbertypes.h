@@ -11,7 +11,6 @@ namespace bigNumber
     // TODO: Use
     enum class Status: int
     {
-        zero,
         nan,
         inf,
         normal

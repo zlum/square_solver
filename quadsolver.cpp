@@ -82,9 +82,9 @@ QuadRoots QuadSolver::calcRoots(const QuadCoeffs& coeffs)
     const BigNumber& c = coeffs.at(2);
 
     // Check if it is a quadratic equation
-    if(a.getStatus() == Status::zero)
+    if(a.isZero())
     {
-        if(b.getStatus() == Status::zero)
+        if(b.isZero())
         {
             // Both x coefficients are zero
             return {BigNaN, BigNaN};
@@ -97,8 +97,7 @@ QuadRoots QuadSolver::calcRoots(const QuadCoeffs& coeffs)
     BigNumber discriminant = (b * b) - (Big4 * a * c);
 
     // Determines root count by discriminant sign
-    if(discriminant.getStatus() != Status::zero &&
-       discriminant.getSign() == Sign::positive)
+    if(!discriminant.isZero() && discriminant.getSign() == Sign::positive)
     {
         // Two roots
         BigNumber sqrtDsc = discriminant.sqrt();
@@ -107,7 +106,7 @@ QuadRoots QuadSolver::calcRoots(const QuadCoeffs& coeffs)
                 calcRoot(sqrtDsc, false, a, b)};
     }
 
-    if(discriminant.getStatus() == Status::zero)
+    if(discriminant.isZero())
     {
         // One root
         return {calcRoot(discriminant.sqrt(), false, a, b),

@@ -18,6 +18,8 @@ public:
             bigNumber::Sign sign,
             bigNumber::Status status); // TODO: Rework
 
+    bool isZero() const;
+
     bigNumber::Sign getSign() const;
     bigNumber::Status getStatus() const;
 

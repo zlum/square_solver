@@ -29,6 +29,21 @@ BigNumber::BigNumber(vector<uint8_t> numIntPart,
 {
 }
 
+bool BigNumber::isZero() const
+{
+    // Going from most significant digit
+    // Always need only one step to get answer
+    for(auto it = _numIntPart.rbegin(); it != _numIntPart.rend(); ++it)
+    {
+        if(*it != 0)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 Sign BigNumber::getSign() const
 {
     return _sign;
@@ -50,7 +65,9 @@ BigNumber BigNumber::sqrt() const
     BigNumber val = *this;
     BigNumber last;
 
-    constexpr int prec = 10; // TODO: Precision const
+    // TODO: Precision have to depends on num length
+    constexpr int prec = 64;
+//    constexpr int prec = 10;
     int i = 0;
 
     do
