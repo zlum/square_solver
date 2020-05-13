@@ -1,5 +1,7 @@
 #include "quadreader.h"
 
+#include "bignumber/bignumberbuilder.h"
+
 #include <algorithm>
 #include <exception>
 #include <string>
@@ -7,10 +9,12 @@
 using namespace std;
 
 QuadReader::QuadReader(int argc, char* argv[],
-                       shared_ptr<Buffer<QuadCoeffs>> outputBuf):
+                       shared_ptr<Buffer<QuadCoeffs>> outputBuf,
+                       unique_ptr<BigNumberBuilder> coeffBuilder):
     _argc(argc),
     _argv(argv),
-    _buf(outputBuf)
+    _buf(outputBuf),
+    _builder(move(coeffBuilder))
 {
 }
 
@@ -32,13 +36,14 @@ void QuadReader::worker()
 {
     // Read 3 values per step. Skips argv[0] cause it is working directory
     // Returns if all arguments had been read
-    size_t i = 1;
+    size_t arg = 1;
+    size_t pos = 0;
 
-    while(i + 2 < size_t(_argc))
+    while(arg < size_t(_argc))
     {
         try
         {
-            _buf->emplace(readCoeffs(i, _argc, _argv), getWorkFlag());
+            _buf->emplace(readCoeffs(arg, pos), getWorkFlag());
         }
         catch(...)
         {
@@ -47,49 +52,50 @@ void QuadReader::worker()
     }
 }
 
-QuadCoeffs QuadReader::readCoeffs(size_t& current, int argc, char* argv[])
+QuadCoeffs QuadReader::readCoeffs(size_t& arg, size_t& pos)
 {
-    size_t j = 0; // Counter of correctly read arguments
+    size_t i = 0; // Counter of correctly read values
     QuadCoeffs coeffs;
 
-    while(j < 3)
+    _builder->clear(); // Prepare builder
+
+    // Read arguments until QuadCoeffs will be fulfilled
+    while(i < 3)
     {
-        string str(argv[j + current]); // Get next argument
+        string str(_argv[arg]); // Get next argument
 
-        // Remove junk symbols
-        str.erase(remove_if(str.begin(), str.end(),
-                            &QuadReader::isNotValidChar),
-                  str.end());
+        // Read string from currentPos to the end or invalid character
+        size_t readNumber = _builder->appendStr(str, pos);
 
-        try
+        if(_builder->isEmpty())
         {
-            coeffs.at(j) = stoi(str); // Try to read int value
+            ++pos;
         }
-        catch(...)
+        else
         {
-            ++current; // Skip current argument
-            if((current + j) >= size_t(argc)) break; // Boundary check
-            continue;
+            // Value had been read. Build number and go to the next
+            pos += readNumber;
+            coeffs.at(i) = _builder->build();
+            ++i;
         }
 
-        ++j;
+        if(pos >= str.size())
+        {
+            // Current argument had been read to the end
+            ++arg; // Skip current argument
+            pos = 0; // Reset read postion
+
+            if((arg) >= size_t(_argc)) break; // Boundary check
+        }
     }
 
-    // Set current read marker to the next arguments
-    current += 3;
-
     // Return coefficients if all of them had been read correctly
-    if(j == 3)
+    if(i == 3)
     {
         return coeffs;
     }
 
+    // FIXME: Throw my type
     // Couldn`t get correct input
     throw runtime_error("Bad input");
-}
-
-bool QuadReader::isNotValidChar(char c)
-{
-    // Allows digits and '-' sign only
-    return !bool(isdigit(c)) && (c != '-');
 }

@@ -15,10 +15,11 @@ public:
             std::vector<uint8_t> numIntPart,
             size_t fractPos,
             bool decimalPointFlag,
-            bigNumber::Sign sign);
+            bigNumber::Sign sign,
+            bigNumber::Status status); // TODO: Rework
 
-    // Changes sign of number or appends digit or decimal point
-//    bool append(char symbol);
+    bigNumber::Sign getSign() const;
+    bigNumber::Status getStatus() const;
 
     BigNumber sqrt() const;
     BigNumber round() const;
@@ -91,5 +92,6 @@ private:
     std::vector<uint8_t> _numIntPart;
     size_t _fractPos;
     bigNumber::Sign _sign;
+    bigNumber::Status _status;
     bool _decimalPointFlag; // TODO: RM
 };

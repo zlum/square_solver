@@ -25,11 +25,12 @@ private:
     virtual void worker() override;
 
     // Helper function to calculate one root
-    static double calcRoot(double sqrtDsc, bool isNegative, int a, int b);
+    static BigNumber calcRoot(const BigNumber& sqrtDsc, bool isNegative,
+                              const BigNumber& a, const BigNumber& b);
 
     // Calculates roots of quadratic equation
     // Using NaN as no root mark
-    static std::pair<double, double> calcRoots(const QuadCoeffs& coeffs);
+    static QuadRoots calcRoots(const QuadCoeffs& coeffs);
 
 private:
     std::shared_ptr<Buffer<QuadCoeffs>> _inputBuf;

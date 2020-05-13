@@ -1,6 +1,7 @@
 #include "bignumberbuilder.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <limits>
 #include <locale>
@@ -12,8 +13,90 @@ using namespace bigNumber;
 BigNumberBuilder::BigNumberBuilder():
     _fractPos(0),
     _sign(Sign::positive),
-    _decimalPointFlag(false)
+    _decimalPointFlag(false),
+    _empty(true)
 {
+}
+
+bool BigNumberBuilder::appendChar(char symbol)
+{
+    bool res = append(symbol);
+
+    if(res)
+    {
+        _empty = false;
+    }
+
+    return res;
+}
+
+size_t BigNumberBuilder::appendStr(const string& str, size_t pos)
+{
+    size_t i = pos;
+
+    while(i < str.size())
+    {
+        if(!appendChar(str.at(i)))
+        {
+            break;
+        }
+
+        ++i;
+    }
+
+    // Position of symbol that couldn't been read or the end of string
+    return i;
+}
+
+BigNumber BigNumberBuilder::build()
+{
+    size_t i = 0;
+
+    while(!_numIntPart.empty() && i < _fractPos)
+    {
+        if(_numIntPart.back() != 0)
+        {
+            break;
+        }
+
+        _numIntPart.pop_back();
+        --_fractPos;
+    }
+
+    reverse(_numIntPart.begin(), _numIntPart.end());
+
+    // NOTE: Fixed in append()
+    // TODO: Use BigNumber::pop
+    while(!_numIntPart.empty())
+    {
+        if(_numIntPart.back() != 0)
+        {
+            break;
+        }
+
+        _numIntPart.pop_back();
+//        --_fractPos;
+    }
+
+    BigNumber num{_numIntPart, _fractPos, _decimalPointFlag, _sign, Status::normal};
+
+    clear();
+
+    return num;
+}
+
+void BigNumberBuilder::clear()
+{
+    _numIntPart.clear();
+    _fractPos = 0;
+    _decimalPointFlag = false;
+    _sign = Sign::positive;
+    _empty = true;
+}
+
+bool BigNumberBuilder::isEmpty() const
+{
+    return _empty;
 }
 
 bool BigNumberBuilder::append(char symbol)
@@ -25,9 +108,8 @@ bool BigNumberBuilder::append(char symbol)
         return true;
     }
 
-    if(symbol >= '0' && symbol <= '9')
+    if(bool(isdigit(symbol)))
     {
-        // TODO: isdigit
         // TODO: Max size constexpr
         if(_numIntPart.size() >= SIZE_MAX - 1)
         {
@@ -70,50 +152,4 @@ bool BigNumberBuilder::append(char symbol)
     }
 
     return false;
-}
-
-BigNumber BigNumberBuilder::build()
-{
-    size_t i = 0;
-
-    while(!_numIntPart.empty() && i < _fractPos)
-    {
-        if(_numIntPart.back() != 0)
-        {
-            break;
-        }
-
-        _numIntPart.pop_back();
-        --_fractPos;
-    }
-
-    reverse(_numIntPart.begin(), _numIntPart.end());
-
-    // NOTE: Fixed in append()
-    // TODO: Use BigNumber::pop
-    while(!_numIntPart.empty())
-    {
-        if(_numIntPart.back() != 0)
-        {
-            break;
-        }
-
-        _numIntPart.pop_back();
-//        --_fractPos;
-    }
-
-    BigNumber num{_numIntPart, _fractPos,
-                  _decimalPointFlag, _sign};
-
-    reset();
-
-    return num;
-}
-
-void BigNumberBuilder::reset()
-{
-    _numIntPart.clear();
-    _fractPos = 0;
-    _decimalPointFlag = false;
-    _sign = Sign::positive;
 }

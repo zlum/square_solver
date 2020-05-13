@@ -19,17 +19,29 @@ BigNumber::BigNumber():
 BigNumber::BigNumber(vector<uint8_t> numIntPart,
                      size_t fractPos,
                      bool decimalPointFlag,
-                     Sign sign):
+                     Sign sign,
+                     Status status):
     _numIntPart(move(numIntPart)),
     _fractPos(fractPos),
     _sign(sign),
+    _status(status),
     _decimalPointFlag(decimalPointFlag)
 {
 }
 
+Sign BigNumber::getSign() const
+{
+    return _sign;
+}
+
+Status BigNumber::getStatus() const
+{
+    return _status;
+}
+
 BigNumber BigNumber::sqrt() const
 {
-    static const BigNumber Big0_5{{5}, 1, false, bigNumber::Sign::positive};
+    static const BigNumber Big0_5{{5}, 1, false, Sign::positive, Status::normal};
     // FIXME: Zero case
 //    if (x==0) return x;
 
@@ -66,14 +78,14 @@ BigNumber BigNumber::round() const
 
     std::vector<uint8_t> num;
     num.insert(num.begin(), _numIntPart.begin() + (_numIntPart.size() - _fractPos) + pos, _numIntPart.end());
-    BigNumber res{num, _fractPos - (_numIntPart.size() - num.size()), false, bigNumber::Sign::positive};
+    BigNumber res{num, _fractPos - (_numIntPart.size() - num.size()), false, bigNumber::Sign::positive, bigNumber::Status::normal};
 
     if(digit < 5)
     {
         return res;
     }
 
-    BigNumber rounder{{1}, num.size(), false, bigNumber::Sign::positive};
+    BigNumber rounder{{1}, num.size(), false, bigNumber::Sign::positive, bigNumber::Status::normal};
 
     return res + rounder;
 }

@@ -7,6 +7,9 @@
 
 #include <memory>
 
+// TODO: Replace with Coeff builder
+class BigNumberBuilder;
+
 // Reads coefficients from cli, stores to task and writes
 // task to output buffer
 class QuadReader:
@@ -14,7 +17,8 @@ class QuadReader:
 {
 public:
     explicit QuadReader(int argc, char* argv[],
-                        std::shared_ptr<Buffer<QuadCoeffs>> outputBuf);
+                        std::shared_ptr<Buffer<QuadCoeffs>> outputBuf,
+                        std::unique_ptr<BigNumberBuilder> coeffBuilder);
     virtual ~QuadReader();
 
     // ProducerConsumer
@@ -23,15 +27,12 @@ public:
 private:
     // ProducerConsumer
     virtual void worker() override;
-
-    // Reads coefficients of quadratic equation from cli arguments
-    static QuadCoeffs readCoeffs(size_t& current, int argc, char* argv[]);
-
-    // Input validator
-    static bool isNotValidChar(char c);
+    // Read coefficients of quadratic equation from cli arguments
+    QuadCoeffs readCoeffs(size_t& arg, size_t& pos);
 
 private:
     int _argc;
     char** _argv;
     std::shared_ptr<Buffer<QuadCoeffs>> _buf;
+    std::unique_ptr<BigNumberBuilder> _builder;
 };

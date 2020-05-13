@@ -4,6 +4,7 @@
 #include <limits>
 
 using namespace std;
+using namespace bigNumber;
 
 QuadSolver::QuadSolver(shared_ptr<Buffer<QuadCoeffs>> inputBuf,
                        shared_ptr<Buffer<QuadEquation>> outputBuf):
@@ -60,54 +61,59 @@ void QuadSolver::worker()
     }
 }
 
-double QuadSolver::calcRoot(double sqrtDsc, bool isNegative, int a, int b)
+BigNumber QuadSolver::calcRoot(const BigNumber& sqrtDsc, bool isNegative,
+                               const BigNumber& a, const BigNumber& b)
 {
-    return (-b + (isNegative ? -sqrtDsc : sqrtDsc)) / (2.0 * a);
+    // Create static object to use as integer literal
+    static const BigNumber Big2{{2}, 0, false, Sign::positive, Status::normal};
+
+    return (-b + (isNegative ? -sqrtDsc : sqrtDsc)) / (Big2 * a);
 }
 
-pair<double, double> QuadSolver::calcRoots(const QuadCoeffs& coeffs)
+QuadRoots QuadSolver::calcRoots(const QuadCoeffs& coeffs)
 {
-    int a = coeffs.at(0);
-    int b = coeffs.at(1);
-    int c = coeffs.at(2);
+    // Create static object to use as integer literal
+    static const BigNumber Big4{{4}, 0, false, Sign::positive, Status::normal};
+    static const BigNumber BigNaN{{}, 0, false, Sign::positive, Status::nan};
+
+    // Get aliases for convenience
+    const BigNumber& a = coeffs.at(0);
+    const BigNumber& b = coeffs.at(1);
+    const BigNumber& c = coeffs.at(2);
 
     // Check if it is a quadratic equation
-    if(a == 0)
+    if(a.getStatus() == Status::zero)
     {
-        if(b == 0)
+        if(b.getStatus() == Status::zero)
         {
             // Both x coefficients are zero
-            return {numeric_limits<double>::quiet_NaN(),
-                    numeric_limits<double>::quiet_NaN()};
+            return {BigNaN, BigNaN};
         }
 
         // Calc as simple bx + c = 0 equation
-        return {double(-c) / double(b),
-                numeric_limits<double>::quiet_NaN()};
+        return {(-c) / b, BigNaN};
     }
 
-    int discriminant = (b * b) - (4 * a * c);
+    BigNumber discriminant = (b * b) - (Big4 * a * c);
 
     // Determines root count by discriminant sign
-    if(discriminant > 0)
+    if(discriminant.getStatus() != Status::zero &&
+       discriminant.getSign() == Sign::positive)
     {
         // Two roots
-        double sqrtDsc = sqrt(discriminant);
+        BigNumber sqrtDsc = discriminant.sqrt();
 
         return {calcRoot(sqrtDsc, true, a, b),
                 calcRoot(sqrtDsc, false, a, b)};
     }
 
-    if(discriminant == 0)
+    if(discriminant.getStatus() == Status::zero)
     {
         // One root
-        double sqrtDsc = sqrt(discriminant);
-
-        return {calcRoot(sqrtDsc, false, a, b),
-                numeric_limits<double>::quiet_NaN()};
+        return {calcRoot(discriminant.sqrt(), false, a, b),
+                BigNaN};
     }
 
     // No roots
-    return {numeric_limits<double>::quiet_NaN(),
-            numeric_limits<double>::quiet_NaN()};
+    return {BigNaN, BigNaN};
 }

@@ -4,6 +4,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace bigNumber;
 
 QuadPrinter::QuadPrinter(std::shared_ptr<Buffer<QuadEquation>> inputBuf):
     _buf(inputBuf)
@@ -54,12 +55,12 @@ void QuadPrinter::printQuadEquation(const QuadEquation& equation)
 
     // Print roots
     // Using NaN as no root mark
-    if(isnan(equation.roots.first))
+    if(equation.roots.first.getStatus() != Status::nan)
     {
         cout << "no roots" << endl;
     }
     else
-    if(isnan(equation.roots.second))
+    if(equation.roots.second.getStatus() != Status::nan)
     {
         // One root
         cout << '('
