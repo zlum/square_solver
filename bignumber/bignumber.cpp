@@ -68,24 +68,25 @@ BigNumber BigNumber::round() const
 {
     constexpr int precision = 30;
 
-    if(_fractPos < precision)
+    if(_fractPos <= precision)
     {
         return *this;
     }
 
-    size_t pos = _numIntPart.size() - precision;
-    uint8_t digit = _numIntPart.at(pos);
+    size_t pos = _fractPos - precision;
+    uint8_t digit = _numIntPart.at(pos - 1);
 
     std::vector<uint8_t> num;
-    num.insert(num.begin(), _numIntPart.begin() + (_numIntPart.size() - _fractPos) + pos, _numIntPart.end());
-    BigNumber res{num, _fractPos - (_numIntPart.size() - num.size()), false, bigNumber::Sign::positive, bigNumber::Status::normal};
+    num.insert(num.begin(), _numIntPart.begin() + pos, _numIntPart.end());
+    size_t numFractPos = _fractPos - (_numIntPart.size() - num.size());
+    BigNumber res{num, numFractPos, false, bigNumber::Sign::positive, bigNumber::Status::normal};
 
     if(digit < 5)
     {
         return res;
     }
 
-    BigNumber rounder{{1}, num.size(), false, bigNumber::Sign::positive, bigNumber::Status::normal};
+    BigNumber rounder{{1}, numFractPos, false, bigNumber::Sign::positive, bigNumber::Status::normal};
 
     return res + rounder;
 }
