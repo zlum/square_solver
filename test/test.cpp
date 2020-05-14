@@ -475,3 +475,18 @@ TEST(SqrtSign, BigNumber)
     EXPECT_TRUE(testZero.getStatus() == Status::nan);
     EXPECT_TRUE(testNeg.getStatus() == Status::nan);
 }
+
+TEST(ZeroSign, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    bnb.appendStr("0");
+    BigNumber testPos{bnb.build()};
+
+    bnb.appendStr("-0");
+    BigNumber testNeg{bnb.build()};
+
+    EXPECT_TRUE(testPos == testPos);
+    EXPECT_TRUE(testPos == testNeg);
+    EXPECT_TRUE(testNeg == testNeg);
+}

@@ -277,18 +277,32 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
         return other;
     }
 
+    Sign sign = Sign::positive;
+
+    if(_sign == other._sign)
+    {
+        sign = Sign::positive;
+    }
+    else
+    {
+        sign = Sign::negative;
+    }
+
+    if(other.isZero())
+    {
+        if(isZero())
+        {
+            return BigNumber{_numIntPart, _fractPos, _decimalPointFlag, sign, Status::nan};
+        }
+
+        return BigNumber{_numIntPart, _fractPos, _decimalPointFlag, sign, Status::inf};
+    }
+
     // FIXME: Zero case
     BigNumber num;
     uint8_t narrower = 0;
 
-    if(_sign == other._sign)
-    {
-        num._sign = Sign::positive;
-    }
-    else
-    {
-        num._sign = Sign::negative;
-    }
+    num._sign = sign;
 
     // TODO: Uncomment
 //    if(*this == other)
@@ -415,6 +429,75 @@ bool BigNumber::operator !=(const BigNumber& other) const
     return !this->operator ==(other);
 }
 
+ostream& operator <<(ostream& os, const BigNumber& num)
+{
+    // Output minus sign if this number is negative and has at least one digit
+    // FIXME: -0.0
+    // FIXME: Status::null
+    if(num.isZero())
+    {
+        os << '0';
+
+        return os;
+    }
+
+    if(num._sign == Sign::negative)
+//       &&
+//       (!num._numIntPart.empty() || num._numFractPart.empty()))
+    {
+        os << '-';
+    }
+
+    if(num.getStatus() == Status::inf)
+    {
+        os << "Inf";
+
+        return os;
+    }
+
+    if(num.getStatus() == Status::nan)
+    {
+        os << "NaN";
+
+        return os;
+    }
+
+    size_t i;
+    const auto& loc = use_facet<numpunct<char>>(cout.getloc());
+
+    if(num._fractPos >= num._numIntPart.size())
+    {
+        os << '0';
+        os << loc.decimal_point();
+        i = num._fractPos;
+    }
+    else
+    {
+        i = num._numIntPart.size();
+    }
+
+    while(i > 0)
+    {
+        --i;
+
+        if(i < num._numIntPart.size())
+        {
+            os << int(num._numIntPart.at(i));
+        }
+        else
+        {
+            os << '0';
+        }
+
+        if(i == num._fractPos && i != 0)
+        {
+            os << loc.decimal_point();
+        }
+    }
+
+    return os;
+}
+
 BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
 {
     BigNumber num;
@@ -484,61 +567,6 @@ BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
     }
 
     return num;
-}
-
-ostream& operator <<(ostream& os, const BigNumber& num)
-{
-    // Output minus sign if this number is negative and has at least one digit
-    // FIXME: -0.0
-    // FIXME: Status::null
-    if(num._numIntPart.empty())
-    {
-        os << '0';
-
-        return os;
-    }
-
-    if(num._sign == Sign::negative)
-//       &&
-//       (!num._numIntPart.empty() || num._numFractPart.empty()))
-    {
-        os << '-';
-    }
-
-    size_t i;
-    const auto& loc = use_facet<numpunct<char>>(cout.getloc());
-
-    if(num._fractPos >= num._numIntPart.size())
-    {
-        os << '0';
-        os << loc.decimal_point();
-        i = num._fractPos;
-    }
-    else
-    {
-        i = num._numIntPart.size();
-    }
-
-    while(i > 0)
-    {
-        --i;
-
-        if(i < num._numIntPart.size())
-        {
-            os << int(num._numIntPart.at(i));
-        }
-        else
-        {
-            os << '0';
-        }
-
-        if(i == num._fractPos && i != 0)
-        {
-            os << loc.decimal_point();
-        }
-    }
-
-    return os;
 }
 
 void BigNumber::setSign(Sign sign)
