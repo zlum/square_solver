@@ -91,19 +91,29 @@ BigNumber BigNumber::round() const
     }
 
     size_t pos = _fractPos - precision;
-    uint8_t digit = _numIntPart.at(pos - 1);
+    size_t digitPos = pos - 1;
+    size_t digit;
+
+    if(digitPos < _numIntPart.size())
+    {
+        digit = _numIntPart.at(digitPos);
+    }
+    else
+    {
+        return BigNumber{{}, 0, false, _sign, _status};
+    }
 
     std::vector<uint8_t> num;
     num.insert(num.begin(), _numIntPart.begin() + pos, _numIntPart.end());
     size_t numFractPos = _fractPos - (_numIntPart.size() - num.size());
-    BigNumber res{num, numFractPos, false, bigNumber::Sign::positive, bigNumber::Status::normal};
+    BigNumber res{num, numFractPos, false, _sign, _status};
 
     if(digit < 5)
     {
         return res;
     }
 
-    BigNumber rounder{{1}, numFractPos, false, bigNumber::Sign::positive, bigNumber::Status::normal};
+    BigNumber rounder{{1}, numFractPos, false, _sign, _status};
 
     return res + rounder;
 }

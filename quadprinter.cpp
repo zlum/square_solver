@@ -55,24 +55,24 @@ void QuadPrinter::printQuadEquation(const QuadEquation& equation)
 
     // Print roots
     // Using NaN as no root mark
-    if(equation.roots.first.getStatus() != Status::nan)
+    if(equation.roots.first.getStatus() == Status::nan)
     {
         cout << "no roots" << endl;
     }
     else
-    if(equation.roots.second.getStatus() != Status::nan)
+    if(equation.roots.second.getStatus() == Status::nan)
     {
         // One root
         cout << '('
-             << equation.roots.first << ')'
+             << equation.roots.first.round() << ')'
              << endl;
     }
     else
     {
         // Two roots
         cout << '('
-             << equation.roots.first << ", "
-             << equation.roots.second << ')'
+             << equation.roots.first.round() << ", "
+             << equation.roots.second.round() << ')'
              << endl;
     }
 }

@@ -127,9 +127,16 @@ TEST(BigFractialRound, BigNumber)
     bnb.appendStr("11.2345622222222222222222222222234");
     BigNumber test4{bnb.build()};
 
+    bnb.appendStr("0.0000000000000000000000000000000000000000000000000000002");
+    BigNumber test5{bnb.build()};
+
+    bnb.appendStr("0");
+    BigNumber test6{bnb.build()};
+
     EXPECT_EQ(test1.round(), test2);
     EXPECT_EQ(test1.round(), test1.round());
     EXPECT_EQ(test3.round(), test4.round());
+    EXPECT_EQ(test5.round(), test6);
 }
 
 TEST(Less, BigNumber)
@@ -323,4 +330,33 @@ TEST(FractialInput, BigNumber)
     BigNumber test3{bnb.build()};
 
     EXPECT_EQ(test1 / test2, test3);
+}
+
+TEST(ZeroNum, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    bnb.appendStr("");
+    BigNumber test0{bnb.build()};
+
+    bnb.appendStr("0");
+    BigNumber test1{bnb.build()};
+
+    bnb.appendStr("0.0");
+    BigNumber test2{bnb.build()};
+
+    bnb.appendStr("000");
+    BigNumber test3{bnb.build()};
+
+    bnb.appendStr("-0.1");
+    BigNumber testNotZero{bnb.build()};
+
+    EXPECT_EQ(test0, test1);
+    EXPECT_EQ(test1, test2);
+    EXPECT_EQ(test2, test3);
+
+    EXPECT_EQ(test0 + testNotZero, testNotZero);
+    EXPECT_EQ(test1 + testNotZero, testNotZero);
+    EXPECT_EQ(test2 + testNotZero, testNotZero);
+    EXPECT_EQ(test3 + testNotZero, testNotZero);
 }
