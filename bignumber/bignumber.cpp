@@ -120,75 +120,56 @@ BigNumber BigNumber::operator -() const
 
 BigNumber BigNumber::operator +(const BigNumber& other) const
 {
-    BigNumber num;
-    uint8_t extender = 0;
-    uint32_t lShift = 0;
-    uint32_t rShift = 0;
+    // Sign managment and select proper function
+    // diff() has to be called with correct number signs
+    // sum() ignores number signs
 
-    if(_fractPos > other._fractPos)
+    // -a + -b == -(a + b)
+    if(_sign == Sign::negative && other._sign == Sign::negative)
     {
-        rShift = _fractPos - other._fractPos;
-        num._fractPos = _fractPos;
-    }
-    else
-    {
-        lShift = other._fractPos - _fractPos;
-        num._fractPos = other._fractPos;
+        return -sum(*this, other);
     }
 
-    vector<uint8_t> sum = sumOfVectors(_numIntPart,
-                                       other._numIntPart, extender,
-                                       lShift, rShift);
-
-    size_t zeroPos = trackZeroes(sum, 0);
-    size_t driftPos = min(zeroPos, num._fractPos);
-
-    num._numIntPart.insert(num._numIntPart.begin(), sum.begin() + driftPos, sum.end());
-    num._fractPos -= driftPos; // TODO: Check
-
-    if(extender != 0)
+    // -a + b == b - a
+    if(_sign == Sign::negative)
     {
-        num._numIntPart.emplace_back(extender);
+        return diff(other, -(*this));
     }
 
-    return num;
+    // a + -b == a - b
+    if(other._sign == Sign::negative)
+    {
+        return diff(*this, -other);
+    }
+
+    return sum(*this, other);
 }
 
 BigNumber BigNumber::operator -(const BigNumber& other) const
 {
-    BigNumber num;
-    uint8_t narrower = 0;
-    uint32_t lShift = 0;
-    uint32_t rShift = 0;
+    // Sign managment and select proper function
+    // diff() has to be called with correct number signs
+    // sum() ignores number signs
 
-    // TODO: Copypaste from op +
-
-    if(_fractPos > other._fractPos)
+    // -a - -b == b - a
+    if(_sign == Sign::negative && other._sign == Sign::negative)
     {
-        rShift = _fractPos - other._fractPos;
-        num._fractPos = _fractPos;
-    }
-    else
-    {
-        lShift = other._fractPos - _fractPos;
-        num._fractPos = other._fractPos;
+        return diff(-other, -(*this));
     }
 
-    if(*this < other)
+    // -a - b == -(a + b)
+    if(_sign == Sign::negative)
     {
-        num._numIntPart = diffOfVectors(other._numIntPart,
-                                        _numIntPart, narrower,
-                                        rShift, lShift);
-        num._sign = Sign::negative;
-    }
-    else
-    {
-        num._numIntPart = diffOfVectors(_numIntPart,
-                                        other._numIntPart, narrower,
-                                        lShift, rShift);
+        return -sum(*this, other);
     }
 
-    return num;
+    // a - -b == a + b
+    if(other._sign == Sign::negative)
+    {
+        return sum(*this, other);
+    }
+
+    return diff(*this, other);
 }
 
 BigNumber BigNumber::operator *(const BigNumber& other) const
@@ -333,6 +314,77 @@ bool BigNumber::operator ==(const BigNumber& other) const
     }
 
     return true;
+}
+
+BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
+{
+    BigNumber num;
+    uint8_t extender = 0;
+    uint32_t lShift = 0;
+    uint32_t rShift = 0;
+
+    if(leftNum._fractPos > rightNum._fractPos)
+    {
+        rShift = leftNum._fractPos - rightNum._fractPos;
+        num._fractPos = leftNum._fractPos;
+    }
+    else
+    {
+        lShift = rightNum._fractPos - leftNum._fractPos;
+        num._fractPos = rightNum._fractPos;
+    }
+
+    vector<uint8_t> sum = sumOfVectors(leftNum._numIntPart,
+                                       rightNum._numIntPart, extender,
+                                       lShift, rShift);
+
+    size_t zeroPos = trackZeroes(sum, 0);
+    size_t driftPos = min(zeroPos, num._fractPos);
+
+    num._numIntPart.insert(num._numIntPart.begin(), sum.begin() + driftPos, sum.end());
+    num._fractPos -= driftPos; // TODO: Check
+
+    if(extender != 0)
+    {
+        num._numIntPart.emplace_back(extender);
+    }
+
+    return num;
+}
+
+BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
+{
+    BigNumber num;
+    uint8_t narrower = 0;
+    uint32_t lShift = 0;
+    uint32_t rShift = 0;
+
+    if(leftNum._fractPos > rightNum._fractPos)
+    {
+        rShift = leftNum._fractPos - rightNum._fractPos;
+        num._fractPos = leftNum._fractPos;
+    }
+    else
+    {
+        lShift = rightNum._fractPos - leftNum._fractPos;
+        num._fractPos = rightNum._fractPos;
+    }
+
+    if(leftNum < rightNum)
+    {
+        num._numIntPart = diffOfVectors(rightNum._numIntPart,
+                                        leftNum._numIntPart, narrower,
+                                        rShift, lShift);
+        num._sign = Sign::negative;
+    }
+    else
+    {
+        num._numIntPart = diffOfVectors(leftNum._numIntPart,
+                                        rightNum._numIntPart, narrower,
+                                        lShift, rShift);
+    }
+
+    return num;
 }
 
 ostream& operator <<(ostream& os, const BigNumber& num)

@@ -40,6 +40,9 @@ public:
     friend std::ostream& operator <<(std::ostream& os, const BigNumber& num);
 
 private:
+    static BigNumber sum(const BigNumber& leftNum, const BigNumber& rightNum);
+    static BigNumber diff(const BigNumber& leftNum, const BigNumber& rightNum);
+
     void setSign(bigNumber::Sign sign); // TODO: RM?
     // Removes nonsignificant digit
     static void popZeroes(std::vector<uint8_t>& vec);

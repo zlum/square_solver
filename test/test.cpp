@@ -233,3 +233,78 @@ TEST(Zero, BigNumber)
     EXPECT_EQ(test2, test3);
     EXPECT_EQ(test3, test4);
 }
+
+TEST(NegativeSum, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    bnb.appendStr("680.4");
+    BigNumber test1{bnb.build()};
+
+    bnb.appendStr("98041.7993");
+    BigNumber test2{bnb.build()};
+
+    EXPECT_EQ(BigNumber{test1 + test2}, BigNumber{-test1 + -test2});
+}
+
+TEST(NegativeDiff, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    bnb.appendStr("680.4");
+    BigNumber test1{bnb.build()};
+
+    bnb.appendStr("98041.7993");
+    BigNumber test2{bnb.build()};
+
+    EXPECT_EQ(BigNumber{test1 - test2}, BigNumber{test1 + -test2});
+}
+
+TEST(NegativeInput, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    bnb.appendStr("-344358550.052354");
+    BigNumber test1{bnb.build()};
+
+    bnb.appendStr("344358550.052354");
+    BigNumber test2{bnb.build()};
+
+    EXPECT_EQ(test1, -test2);
+}
+
+TEST(ConcreteSum, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    bnb.appendStr("1");
+    BigNumber test1{bnb.build()};
+
+    bnb.appendStr("2");
+    BigNumber test2{bnb.build()};
+
+    EXPECT_EQ(test1 + -test2, -test1);
+    EXPECT_EQ(-test1 + test2, test1);
+    EXPECT_EQ(-test1 + -test1, -test2);
+}
+
+TEST(ConcreteDiff, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    bnb.appendStr("0");
+    BigNumber test0{bnb.build()};
+
+    bnb.appendStr("1");
+    BigNumber test1{bnb.build()};
+
+    bnb.appendStr("2");
+    BigNumber test2{bnb.build()};
+
+    bnb.appendStr("3");
+    BigNumber test3{bnb.build()};
+
+    EXPECT_EQ(test1 - -test2, test3);
+    EXPECT_EQ(-test1 - test2, -test3);
+    EXPECT_EQ(-test1 - -test1, -test0);
+}
