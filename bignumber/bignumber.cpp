@@ -12,6 +12,7 @@ using namespace bigNumber;
 BigNumber::BigNumber():
     _fractPos(0),
     _sign(Sign::positive),
+    _status(Status::normal),
     _decimalPointFlag(false)
 {
 }
@@ -31,6 +32,12 @@ BigNumber::BigNumber(vector<uint8_t> numIntPart,
 
 bool BigNumber::isZero() const
 {
+    // Only normal numbers could be zero
+    if(_status != Status::normal)
+    {
+        return false;
+    }
+
     // Going from most significant digit
     // Always need only one step to get answer
     for(auto it = _numIntPart.rbegin(); it != _numIntPart.rend(); ++it)
@@ -56,6 +63,11 @@ Status BigNumber::getStatus() const
 
 BigNumber BigNumber::sqrt() const
 {
+    if(_status != Status::normal)
+    {
+        return *this;
+    }
+
     static const BigNumber Big0_5{{5}, 1, false, Sign::positive, Status::normal};
     // FIXME: Zero case
 //    if (x==0) return x;
@@ -83,6 +95,11 @@ BigNumber BigNumber::sqrt() const
 
 BigNumber BigNumber::round() const
 {
+    if(_status != Status::normal)
+    {
+        return *this;
+    }
+
     constexpr int precision = 30;
 
     if(_fractPos <= precision)
@@ -130,6 +147,16 @@ BigNumber BigNumber::operator -() const
 
 BigNumber BigNumber::operator +(const BigNumber& other) const
 {
+    if(_status != Status::normal)
+    {
+        return *this;
+    }
+
+    if(other._status != Status::normal)
+    {
+        return other;
+    }
+
     // Sign managment and select proper function
     // diff() has to be called with correct number signs
     // sum() ignores number signs
@@ -157,6 +184,16 @@ BigNumber BigNumber::operator +(const BigNumber& other) const
 
 BigNumber BigNumber::operator -(const BigNumber& other) const
 {
+    if(_status != Status::normal)
+    {
+        return *this;
+    }
+
+    if(other._status != Status::normal)
+    {
+        return other;
+    }
+
     // Sign managment and select proper function
     // diff() has to be called with correct number signs
     // sum() ignores number signs
@@ -184,6 +221,16 @@ BigNumber BigNumber::operator -(const BigNumber& other) const
 
 BigNumber BigNumber::operator *(const BigNumber& other) const
 {
+    if(_status != Status::normal)
+    {
+        return *this;
+    }
+
+    if(other._status != Status::normal)
+    {
+        return other;
+    }
+
     // FIXME: After * 0 pop vector
     BigNumber num;
     uint8_t extender = 0;
@@ -217,6 +264,16 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
 
 BigNumber BigNumber::operator /(const BigNumber& other) const
 {
+    if(_status != Status::normal)
+    {
+        return *this;
+    }
+
+    if(other._status != Status::normal)
+    {
+        return other;
+    }
+
     // FIXME: Zero case
     BigNumber num;
     uint8_t narrower = 0;
@@ -265,6 +322,11 @@ bool BigNumber::operator >(const BigNumber& other) const
         return true;
     }
 
+    if(_status != Status::normal)
+    {
+        return false;
+    }
+
     // FIXME: Copypaste and conversion
     if(int64_t(_numIntPart.size() - _fractPos) < int64_t(other._numIntPart.size() - other._fractPos))
     {
@@ -287,6 +349,11 @@ bool BigNumber::operator <(const BigNumber& other) const
         return true;
     }
 
+    if(_status != Status::normal)
+    {
+        return false;
+    }
+
     if(int64_t(_numIntPart.size() - _fractPos) > int64_t(other._numIntPart.size() - other._fractPos))
     {
         return false;
@@ -301,9 +368,23 @@ bool BigNumber::operator <(const BigNumber& other) const
                           other._numIntPart, other._fractPos);
 }
 
-// TODO: RM?
 bool BigNumber::operator ==(const BigNumber& other) const
 {
+    if(_sign != other._sign && !isZero())
+    {
+        return false;
+    }
+
+    if(_status == Status::inf)
+    {
+        return true;
+    }
+
+    if(_status == Status::nan)
+    {
+        return false;
+    }
+
     // TODO: Check
     if(_fractPos != other._fractPos ||
        _numIntPart.size() != other._numIntPart.size())
@@ -324,6 +405,11 @@ bool BigNumber::operator ==(const BigNumber& other) const
     }
 
     return true;
+}
+
+bool BigNumber::operator !=(const BigNumber& other) const
+{
+    return !this->operator ==(other);
 }
 
 BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)

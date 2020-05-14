@@ -251,7 +251,7 @@ TEST(NegativeSum, BigNumber)
     bnb.appendStr("98041.7993");
     BigNumber test2{bnb.build()};
 
-    EXPECT_EQ(BigNumber{test1 + test2}, BigNumber{-test1 + -test2});
+    EXPECT_EQ(BigNumber{test1 + test2}, -BigNumber{-test1 + -test2});
 }
 
 TEST(NegativeDiff, BigNumber)
@@ -359,4 +359,25 @@ TEST(ZeroNum, BigNumber)
     EXPECT_EQ(test1 + testNotZero, testNotZero);
     EXPECT_EQ(test2 + testNotZero, testNotZero);
     EXPECT_EQ(test3 + testNotZero, testNotZero);
+}
+
+TEST(Equal, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    BigNumber testPosInf{{}, 0, false, Sign::positive, Status::inf};
+    BigNumber testNegInf{{}, 0, false, Sign::negative, Status::inf};
+    BigNumber testPosNaN{{}, 0, false, Sign::positive, Status::nan};
+    BigNumber testNegNaN{{}, 0, false, Sign::negative, Status::nan};
+    BigNumber testPosZero{{}, 0, false, Sign::positive, Status::normal};
+    BigNumber testNegZero{{}, 0, false, Sign::negative, Status::normal};
+
+    EXPECT_EQ(testPosInf, testPosInf);
+    EXPECT_NE(testPosInf, testNegInf);
+    EXPECT_NE(testPosNaN, testPosNaN);
+    EXPECT_NE(testPosNaN, testNegNaN);
+    EXPECT_NE(testNegNaN, testNegNaN);
+    EXPECT_EQ(testPosZero, testPosZero);
+    EXPECT_EQ(testPosZero, testNegZero);
+    EXPECT_EQ(testNegZero, testNegZero);
 }

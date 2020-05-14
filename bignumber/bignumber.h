@@ -36,6 +36,7 @@ public:
     bool operator >(const BigNumber& other) const;
     bool operator <(const BigNumber& other) const;
     bool operator ==(const BigNumber& other) const;
+    bool operator !=(const BigNumber& other) const;
 
     friend std::ostream& operator <<(std::ostream& os, const BigNumber& num);
 
