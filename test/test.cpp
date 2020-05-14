@@ -381,3 +381,97 @@ TEST(Equal, BigNumber)
     EXPECT_EQ(testPosZero, testNegZero);
     EXPECT_EQ(testNegZero, testNegZero);
 }
+
+TEST(SumSign, BigNumber)
+{
+    BigNumberBuilder bnb;
+    static const BigNumber Big0{{}, 0, false, Sign::positive, Status::normal};
+
+    bnb.appendStr("123");
+    BigNumber test123{bnb.build()};
+
+    bnb.appendStr("987");
+    BigNumber test987{bnb.build()};
+
+    EXPECT_TRUE((-test987 + test123) < Big0);
+    EXPECT_TRUE((-test987 + -test123) < Big0);
+    EXPECT_TRUE((test123 + -test987) < Big0);
+    EXPECT_TRUE((-test123 + -test987) < Big0);
+    EXPECT_TRUE(Big0 > (-test987 + test123));
+    EXPECT_TRUE(Big0 > (-test987 + -test123));
+    EXPECT_TRUE(Big0 > (test123 + -test987));
+    EXPECT_TRUE(Big0 > (-test123 + -test987));
+}
+
+TEST(DiffSign, BigNumber)
+{
+    BigNumberBuilder bnb;
+    static const BigNumber Big0{{}, 0, false, Sign::positive, Status::normal};
+
+    bnb.appendStr("123");
+    BigNumber test123{bnb.build()};
+
+    bnb.appendStr("987");
+    BigNumber test987{bnb.build()};
+
+    EXPECT_TRUE((-test123 - test987) < Big0);
+    EXPECT_TRUE((test123 - test987) < Big0);
+    EXPECT_TRUE(Big0 > (-test123 - test987));
+    EXPECT_TRUE(Big0 > (test123 - test987));
+}
+
+TEST(ProdSign, BigNumber)
+{
+    BigNumberBuilder bnb;
+    static const BigNumber Big0{{}, 0, false, Sign::positive, Status::normal};
+
+    bnb.appendStr("358550.0523");
+    BigNumber testPos{bnb.build()};
+
+    bnb.appendStr("-6876.134");
+    BigNumber testNeg{bnb.build()};
+
+    EXPECT_TRUE((testPos * testPos) > Big0);
+    EXPECT_TRUE((testPos * testNeg) < Big0);
+    EXPECT_TRUE((testNeg * testPos) < Big0);
+    EXPECT_TRUE((testNeg * testNeg) > Big0);
+}
+
+TEST(QuatSign, BigNumber)
+{
+    BigNumberBuilder bnb;
+    static const BigNumber Big0{{}, 0, false, Sign::positive, Status::normal};
+
+    bnb.appendStr("358550.0523");
+    BigNumber testPos{bnb.build()};
+
+    bnb.appendStr("-6876.134");
+    BigNumber testNeg{bnb.build()};
+
+    EXPECT_TRUE((testPos / testPos) > Big0);
+    EXPECT_TRUE((testPos / testNeg) < Big0);
+    EXPECT_TRUE((testNeg / testPos) < Big0);
+    EXPECT_TRUE((testNeg / testNeg) > Big0);
+}
+
+TEST(SqrtSign, BigNumber)
+{
+    BigNumberBuilder bnb;
+    static const BigNumber Big0{{}, 0, false, Sign::positive, Status::normal};
+
+    bnb.appendStr("400");
+    BigNumber testPos{bnb.build()};
+    testPos = testPos.sqrt();
+
+    bnb.appendStr("0");
+    BigNumber testZero{bnb.build()};
+    testZero = testZero.sqrt();
+
+    bnb.appendStr("-1600");
+    BigNumber testNeg{bnb.build()};
+    testNeg = testNeg.sqrt();
+
+    EXPECT_TRUE(testPos > Big0);
+    EXPECT_TRUE(testZero.getStatus() == Status::nan);
+    EXPECT_TRUE(testNeg.getStatus() == Status::nan);
+}

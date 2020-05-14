@@ -68,9 +68,12 @@ BigNumber BigNumber::sqrt() const
         return *this;
     }
 
+    if(_sign == Sign::negative || isZero())
+    {
+        return BigNumber{_numIntPart, _fractPos, _decimalPointFlag, _sign, Status::nan};
+    }
+
     static const BigNumber Big0_5{{5}, 1, false, Sign::positive, Status::normal};
-    // FIXME: Zero case
-//    if (x==0) return x;
 
     // Newton's method
     BigNumber dividend = *this;
@@ -235,7 +238,7 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
     BigNumber num;
     uint8_t extender = 0;
 
-    if(num._sign == other._sign)
+    if(_sign == other._sign)
     {
         num._sign = Sign::positive;
     }
@@ -278,7 +281,7 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
     BigNumber num;
     uint8_t narrower = 0;
 
-    if(num._sign == other._sign)
+    if(_sign == other._sign)
     {
         num._sign = Sign::positive;
     }
