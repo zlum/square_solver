@@ -308,3 +308,19 @@ TEST(ConcreteDiff, BigNumber)
     EXPECT_EQ(-test1 - test2, -test3);
     EXPECT_EQ(-test1 - -test1, -test0);
 }
+
+TEST(FractialInput, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    bnb.appendStr("1");
+    BigNumber test1{bnb.build()};
+
+    bnb.appendStr("200");
+    BigNumber test2{bnb.build()};
+
+    bnb.appendStr("0.005");
+    BigNumber test3{bnb.build()};
+
+    EXPECT_EQ(test1 / test2, test3);
+}

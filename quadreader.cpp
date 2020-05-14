@@ -84,6 +84,7 @@ QuadCoeffs QuadReader::readCoeffs(size_t& arg, size_t& pos)
             // Current argument had been read to the end
             ++arg; // Skip current argument
             pos = 0; // Reset read postion
+            _builder->clear(); // Reset builder (sign or dec point could be set)
 
             if((arg) >= size_t(_argc)) break; // Boundary check
         }

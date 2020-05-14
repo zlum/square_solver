@@ -25,10 +25,6 @@ public:
     bool isEmpty() const;
 
 private:
-    // Utility function to append symbol. !Does not change empty status!
-    bool append(char symbol);
-
-private:
     std::vector<uint8_t> _numIntPart;
     size_t _fractPos;
     bigNumber::Sign _sign;
