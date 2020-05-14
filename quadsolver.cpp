@@ -91,7 +91,7 @@ QuadRoots QuadSolver::calcRoots(const QuadCoeffs& coeffs)
         }
 
         // Calc as simple bx + c = 0 equation
-        return {(-c) / b, BigNaN};
+        return {b / -c, BigNaN};
     }
 
     BigNumber discriminant = (b * b) - (Big4 * a * c);
