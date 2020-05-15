@@ -79,6 +79,7 @@ private:
                                               const std::vector<uint8_t>& rNum,
                                               size_t lUp,
                                               size_t rUp, // TODO: Fix naming
+                                              size_t precision,
                                               uint8_t& narrower);
 
     // TODO: Merge this two isVec* and rename

@@ -326,7 +326,7 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
         lUp = other._fractPos - _fractPos;
     }
 
-    num._numIntPart = quotOfVectors(_numIntPart, other._numIntPart, 0, rUp, narrower);
+    num._numIntPart = quotOfVectors(_numIntPart, other._numIntPart, 0, rUp, lUp, narrower);
     num._fractPos = narrower - lUp; //abs(int64_t(_fractPos - other._fractPos)); // TODO: Rename
 
     return num;
@@ -820,6 +820,7 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
                                          const vector<uint8_t>& rNum,
                                          size_t lUp,
                                          size_t rUp,
+                                         size_t precision,
                                          uint8_t& narrower) // TODO: RM
 {
     // FIXME: Empty case
@@ -930,8 +931,7 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
             continue;
         }
 
-        if(lNumPart.empty() ||
-           quotNum.size() > 40) // TODO: Add precision const
+        if(lNumPart.empty() || narrower >= precision + 31) // TODO: Add precision const
         {
             break;
         }
