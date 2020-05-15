@@ -159,9 +159,14 @@ TEST(Less, BigNumber)
     bnb.appendStr("799299999999999999999999999999999999999999999998");
     BigNumber test6{bnb.build()};
 
+    BigNumber BigPrec{{1}, 31, true, Sign::positive, Status::normal};
+    BigNumber Big1{{1}, 0, false, Sign::positive, Status::normal};
+
     EXPECT_TRUE(test1 < test2);
     EXPECT_TRUE(test3 < test4);
     EXPECT_TRUE(test5 < test6);
+    EXPECT_FALSE(Big1 - BigPrec < BigPrec);
+    EXPECT_TRUE(Big1 - BigPrec < Big1);
 }
 
 TEST(Greater, BigNumber)
@@ -184,9 +189,14 @@ TEST(Greater, BigNumber)
     bnb.appendStr("799299999999999999999999999999999999999999999998");
     BigNumber test6{bnb.build()};
 
+    BigNumber BigPrec{{1}, 31, true, Sign::positive, Status::normal};
+    BigNumber Big1{{1}, 0, false, Sign::positive, Status::normal};
+
     EXPECT_TRUE(test2 > test1);
     EXPECT_TRUE(test4 > test3);
     EXPECT_TRUE(test6 > test5);
+    EXPECT_TRUE(Big1 - BigPrec > BigPrec);
+    EXPECT_TRUE(Big1 + BigPrec > Big1);
 }
 
 TEST(QuatSum, BigNumber)
@@ -526,4 +536,25 @@ TEST(ZeroSign, BigNumber)
     EXPECT_TRUE(testPos == testPos);
     EXPECT_TRUE(testPos == testNeg);
     EXPECT_TRUE(testNeg == testNeg);
+}
+
+TEST(SqrtGrow, BigNumber)
+{
+    BigNumberBuilder bnb;
+    static const BigNumber Big2{{2}, 0, false, Sign::positive, Status::normal};
+    static const BigNumber Big4{{4}, 0, false, Sign::positive, Status::normal};
+
+    bnb.appendStr("4");
+    BigNumber test1{bnb.build()};
+
+    bnb.appendStr("2");
+    BigNumber test2{bnb.build()};
+
+    for(int i = 0; i < 32; ++i)
+    {
+        test1 = test1 * Big4;
+        test2 = test2 * Big2;
+
+        EXPECT_EQ(BigNumber(test1.sqrt()).round(), test2);
+    }
 }

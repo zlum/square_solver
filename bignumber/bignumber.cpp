@@ -73,16 +73,15 @@ BigNumber BigNumber::sqrt() const
         return BigNumber{_numIntPart, _fractPos, _decimalPointFlag, _sign, Status::nan};
     }
 
-    static const BigNumber Big0_5{{5}, 1, false, Sign::positive, Status::normal};
+    static const BigNumber Big0_5{{5}, 1, true, Sign::positive, Status::normal};
+    static const BigNumber Big1{{1}, 0, false, Sign::positive, Status::normal};
 
     // Newton's method
     BigNumber dividend = *this;
     BigNumber val = *this;
     BigNumber last;
 
-    // TODO: Precision have to depends on num length
-    constexpr int prec = 64;
-//    constexpr int prec = 10;
+    int prec = min(size_t(64), max(size_t(8), _numIntPart.size() * 5));
     int i = 0;
 
     do
@@ -91,9 +90,29 @@ BigNumber BigNumber::sqrt() const
         last = val;
         val = (val + dividend / val) * Big0_5;
     }
+//    while(last - val > BigPrec); // Precision
     while(i < prec); // Precision
 
     return val;
+
+
+
+
+//    BigNumber Big0{{0}, 0, true, Sign::positive, Status::normal};
+//    BigNumber Big1{{1}, 0, true, Sign::positive, Status::normal};
+//    BigNumber Big2{{2}, 0, true, Sign::positive, Status::normal};
+//    BigNumber r = *this;
+//    while (Big0 < r || Big0 == r) {
+//        BigNumber mid = Big0 + (r - Big0) / Big2; // (l + r) / 2;
+//        BigNumber midmid = mid * mid;
+//        // check if x falls into [mid^2, (mid + 1)^2)
+//        if ((midmid < *this || midmid == *this) && (*this < (mid + Big1) * (mid + Big1))) return mid;
+//        if (midmid > *this) {
+//            r = mid - Big1;
+//        } else {
+//            Big0 = mid + Big1;
+//        }
+//    }
 }
 
 BigNumber BigNumber::round() const
