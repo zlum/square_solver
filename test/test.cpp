@@ -159,8 +159,8 @@ TEST(Less, BigNumber)
     bnb.appendStr("799299999999999999999999999999999999999999999998");
     BigNumber test6{bnb.build()};
 
-    BigNumber BigPrec{{1}, 31, true, Sign::positive, Status::normal};
-    BigNumber Big1{{1}, 0, false, Sign::positive, Status::normal};
+    BigNumber BigPrec{{1}, 31, Sign::positive, Status::normal};
+    BigNumber Big1{{1}, 0, Sign::positive, Status::normal};
 
     EXPECT_TRUE(test1 < test2);
     EXPECT_TRUE(test3 < test4);
@@ -189,8 +189,8 @@ TEST(Greater, BigNumber)
     bnb.appendStr("799299999999999999999999999999999999999999999998");
     BigNumber test6{bnb.build()};
 
-    BigNumber BigPrec{{1}, 31, true, Sign::positive, Status::normal};
-    BigNumber Big1{{1}, 0, false, Sign::positive, Status::normal};
+    BigNumber BigPrec{{1}, 31, Sign::positive, Status::normal};
+    BigNumber Big1{{1}, 0, Sign::positive, Status::normal};
 
     EXPECT_TRUE(test2 > test1);
     EXPECT_TRUE(test4 > test3);
@@ -412,12 +412,12 @@ TEST(Equal, BigNumber)
 {
     BigNumberBuilder bnb;
 
-    BigNumber testPosInf{{}, 0, false, Sign::positive, Status::inf};
-    BigNumber testNegInf{{}, 0, false, Sign::negative, Status::inf};
-    BigNumber testPosNaN{{}, 0, false, Sign::positive, Status::nan};
-    BigNumber testNegNaN{{}, 0, false, Sign::negative, Status::nan};
-    BigNumber testPosZero{{}, 0, false, Sign::positive, Status::normal};
-    BigNumber testNegZero{{}, 0, false, Sign::negative, Status::normal};
+    BigNumber testPosInf{{}, 0, Sign::positive, Status::inf};
+    BigNumber testNegInf{{}, 0, Sign::negative, Status::inf};
+    BigNumber testPosNaN{{}, 0, Sign::positive, Status::nan};
+    BigNumber testNegNaN{{}, 0, Sign::negative, Status::nan};
+    BigNumber testPosZero{{}, 0, Sign::positive, Status::normal};
+    BigNumber testNegZero{{}, 0, Sign::negative, Status::normal};
 
     EXPECT_EQ(testPosInf, testPosInf);
     EXPECT_NE(testPosInf, testNegInf);
@@ -432,7 +432,7 @@ TEST(Equal, BigNumber)
 TEST(SumSign, BigNumber)
 {
     BigNumberBuilder bnb;
-    static const BigNumber Big0{{}, 0, false, Sign::positive, Status::normal};
+    static const BigNumber Big0{{}, 0, Sign::positive, Status::normal};
 
     bnb.appendStr("123");
     BigNumber test123{bnb.build()};
@@ -453,7 +453,7 @@ TEST(SumSign, BigNumber)
 TEST(DiffSign, BigNumber)
 {
     BigNumberBuilder bnb;
-    static const BigNumber Big0{{}, 0, false, Sign::positive, Status::normal};
+    static const BigNumber Big0{{}, 0, Sign::positive, Status::normal};
 
     bnb.appendStr("123");
     BigNumber test123{bnb.build()};
@@ -470,7 +470,7 @@ TEST(DiffSign, BigNumber)
 TEST(ProdSign, BigNumber)
 {
     BigNumberBuilder bnb;
-    static const BigNumber Big0{{}, 0, false, Sign::positive, Status::normal};
+    static const BigNumber Big0{{}, 0, Sign::positive, Status::normal};
 
     bnb.appendStr("358550.0523");
     BigNumber testPos{bnb.build()};
@@ -487,7 +487,7 @@ TEST(ProdSign, BigNumber)
 TEST(QuatSign, BigNumber)
 {
     BigNumberBuilder bnb;
-    static const BigNumber Big0{{}, 0, false, Sign::positive, Status::normal};
+    static const BigNumber Big0{{}, 0, Sign::positive, Status::normal};
 
     bnb.appendStr("358550.0523");
     BigNumber testPos{bnb.build()};
@@ -504,7 +504,7 @@ TEST(QuatSign, BigNumber)
 TEST(SqrtSign, BigNumber)
 {
     BigNumberBuilder bnb;
-    static const BigNumber Big0{{}, 0, false, Sign::positive, Status::normal};
+    static const BigNumber Big0{{}, 0, Sign::positive, Status::normal};
 
     bnb.appendStr("400");
     BigNumber testPos{bnb.build()};
@@ -541,8 +541,8 @@ TEST(ZeroSign, BigNumber)
 TEST(SqrtGrow, BigNumber)
 {
     BigNumberBuilder bnb;
-    static const BigNumber Big2{{2}, 0, false, Sign::positive, Status::normal};
-    static const BigNumber Big4{{4}, 0, false, Sign::positive, Status::normal};
+    static const BigNumber Big2{{2}, 0, Sign::positive, Status::normal};
+    static const BigNumber Big4{{4}, 0, Sign::positive, Status::normal};
 
     bnb.appendStr("4");
     BigNumber test1{bnb.build()};

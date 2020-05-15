@@ -129,7 +129,7 @@ BigNumber BigNumberBuilder::build()
 //        --_fractPos;
     }
 
-    BigNumber num{_numIntPart, _fractPos, _decimalPointFlag, _sign, Status::normal};
+    BigNumber num{_numIntPart, _fractPos, _sign, Status::normal};
 
     clear();
 

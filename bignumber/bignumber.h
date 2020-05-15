@@ -9,14 +9,12 @@
 class BigNumber final
 {
 public:
-    // TODO: Add reservre()
     explicit BigNumber();
     explicit BigNumber(
             std::vector<uint8_t> numIntPart,
             size_t fractPos,
-            bool decimalPointFlag,
             bigNumber::Sign sign,
-            bigNumber::Status status); // TODO: Rework
+            bigNumber::Status status);
 
     bool isZero() const;
 
@@ -101,5 +99,4 @@ private:
     size_t _fractPos;
     bigNumber::Sign _sign;
     bigNumber::Status _status;
-    bool _decimalPointFlag; // TODO: RM
 };

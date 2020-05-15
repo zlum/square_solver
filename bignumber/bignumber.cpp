@@ -12,21 +12,18 @@ using namespace bigNumber;
 BigNumber::BigNumber():
     _fractPos(0),
     _sign(Sign::positive),
-    _status(Status::normal),
-    _decimalPointFlag(false)
+    _status(Status::normal)
 {
 }
 
 BigNumber::BigNumber(vector<uint8_t> numIntPart,
                      size_t fractPos,
-                     bool decimalPointFlag,
                      Sign sign,
                      Status status):
     _numIntPart(move(numIntPart)),
     _fractPos(fractPos),
     _sign(sign),
-    _status(status),
-    _decimalPointFlag(decimalPointFlag)
+    _status(status)
 {
 }
 
@@ -70,11 +67,10 @@ BigNumber BigNumber::sqrt() const
 
     if(_sign == Sign::negative || isZero())
     {
-        return BigNumber{_numIntPart, _fractPos, _decimalPointFlag, _sign, Status::nan};
+        return BigNumber{_numIntPart, _fractPos, _sign, Status::nan};
     }
 
-    static const BigNumber Big0_5{{5}, 1, true, Sign::positive, Status::normal};
-    static const BigNumber Big1{{1}, 0, false, Sign::positive, Status::normal};
+    static const BigNumber Big0_5{{5}, 1, Sign::positive, Status::normal};
 
     // Newton's method
     BigNumber dividend = *this;
@@ -94,25 +90,6 @@ BigNumber BigNumber::sqrt() const
     while(i < prec); // Precision
 
     return val;
-
-
-
-
-//    BigNumber Big0{{0}, 0, true, Sign::positive, Status::normal};
-//    BigNumber Big1{{1}, 0, true, Sign::positive, Status::normal};
-//    BigNumber Big2{{2}, 0, true, Sign::positive, Status::normal};
-//    BigNumber r = *this;
-//    while (Big0 < r || Big0 == r) {
-//        BigNumber mid = Big0 + (r - Big0) / Big2; // (l + r) / 2;
-//        BigNumber midmid = mid * mid;
-//        // check if x falls into [mid^2, (mid + 1)^2)
-//        if ((midmid < *this || midmid == *this) && (*this < (mid + Big1) * (mid + Big1))) return mid;
-//        if (midmid > *this) {
-//            r = mid - Big1;
-//        } else {
-//            Big0 = mid + Big1;
-//        }
-//    }
 }
 
 BigNumber BigNumber::round() const
@@ -139,20 +116,20 @@ BigNumber BigNumber::round() const
     }
     else
     {
-        return BigNumber{{}, 0, false, _sign, _status};
+        return BigNumber{{}, 0, _sign, _status};
     }
 
     std::vector<uint8_t> num;
     num.insert(num.begin(), _numIntPart.begin() + pos, _numIntPart.end());
     size_t numFractPos = _fractPos - (_numIntPart.size() - num.size());
-    BigNumber res{num, numFractPos, false, _sign, _status};
+    BigNumber res{num, numFractPos, _sign, _status};
 
     if(digit < 5)
     {
         return res;
     }
 
-    BigNumber rounder{{1}, numFractPos, false, _sign, _status};
+    BigNumber rounder{{1}, numFractPos, _sign, _status};
 
     return res + rounder;
 }
@@ -311,10 +288,10 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
     {
         if(isZero())
         {
-            return BigNumber{_numIntPart, _fractPos, _decimalPointFlag, sign, Status::nan};
+            return BigNumber{_numIntPart, _fractPos, sign, Status::nan};
         }
 
-        return BigNumber{_numIntPart, _fractPos, _decimalPointFlag, sign, Status::inf};
+        return BigNumber{_numIntPart, _fractPos, sign, Status::inf};
     }
 
     // FIXME: Zero case
