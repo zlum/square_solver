@@ -780,23 +780,16 @@ vector<uint8_t> BigNumber::prodOfVectors(const vector<uint8_t>& lNum,
                                          const vector<uint8_t>& rNum,
                                          uint8_t& extender)
 {
-    // FIXME: Zero case
-    vector<vector<uint8_t>> prodBuf;
     vector<uint8_t> prodNum;
     uint32_t shift = 0; // TODO: Rename
 
-    prodBuf.reserve(rNum.size());
+    // TODO: Reserve
 //    prodNum.reserve(lNum.size() + rNum.size() - 1);
 
     for(const auto& next : rNum)
     {
-        prodBuf.emplace_back(prodHelper(lNum, next));
-    }
-
-    // NOTE: Performance?
-    for(const auto& next : prodBuf)
-    {
-        prodNum = sumOfVectors(prodNum, next, extender, 0, shift);
+        prodNum = sumOfVectors(prodNum, prodHelper(lNum, next),
+                               extender, 0, shift);
 
         if(extender != 0)
         {
