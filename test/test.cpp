@@ -311,9 +311,46 @@ TEST(ConcreteDiff, BigNumber)
     bnb.appendStr("3");
     BigNumber test3{bnb.build()};
 
+    bnb.appendStr("999999999999999999999999999999999999999999999999999999");
+    BigNumber testMany9{bnb.build()};
+
+    bnb.appendStr("1000000000000000000000000000000000000000000000000000000");
+    BigNumber testMany9and1{bnb.build()};
+
     EXPECT_EQ(test1 - -test2, test3);
     EXPECT_EQ(-test1 - test2, -test3);
     EXPECT_EQ(-test1 - -test1, -test0);
+    EXPECT_EQ(testMany9and1 - test1, testMany9);
+    EXPECT_EQ(testMany9 - testMany9and1, -test1);
+}
+
+TEST(ConcreteQuat, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    bnb.appendStr("0");
+    BigNumber test0{bnb.build()};
+
+    bnb.appendStr("1");
+    BigNumber test1{bnb.build()};
+
+    bnb.appendStr("2");
+    BigNumber test2{bnb.build()};
+
+    bnb.appendStr("3");
+    BigNumber test3{bnb.build()};
+
+    bnb.appendStr("99999999999999999999999999999999999999999999999999999999");
+    BigNumber testMany9{bnb.build()};
+
+    bnb.appendStr("49999999999999999999999999999999999999999999999999999999.5");
+    BigNumber testHalfOfMany9{bnb.build()};
+
+    EXPECT_EQ(testMany9 / test2, testHalfOfMany9);
+//    EXPECT_EQ(-test1 - test2, -test3);
+//    EXPECT_EQ(-test1 - -test1, -test0);
+//    EXPECT_EQ(testMany9and1 - test1, testMany9);
+//    EXPECT_EQ(testMany9 - testMany9and1, -test1);
 }
 
 TEST(FractialInput, BigNumber)

@@ -640,7 +640,9 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
                                          uint32_t rShift)
 {
     size_t maxSize = max(lNum.size() + lShift, rNum.size() + rShift);
-    vector<uint8_t> diffNum(maxSize);
+    vector<uint8_t> diffNum; // (maxSize);
+
+    diffNum.reserve(maxSize);
 
     for(size_t i = 0; i < maxSize; ++i)
     {
@@ -678,7 +680,7 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
             narrower = 0;
         }
 
-        diffNum.at(i) = diff;
+        diffNum.emplace_back(diff);
     }
 
     popZeroes(diffNum);
@@ -686,16 +688,12 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
     return diffNum;
 }
 
-vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
-                                              const vector<uint8_t>& rNum,
-                                              uint32_t lShift,
-                                              uint32_t rShift)
+void BigNumber::quotHelper(vector<uint8_t>& lNum, const vector<uint8_t>& rNum,
+                           uint32_t rShift)
 {
-    size_t maxSize = max(lNum.size() + lShift, rNum.size() + rShift);
-    vector<uint8_t> diffNum(maxSize);
     uint8_t narrower = 0;
 
-    size_t i = maxSize;
+    size_t i = lNum.size();
 
     while(i > 0)
     {
@@ -705,14 +703,21 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
 
         --i;
 
-        if(i >= lShift && i < lNum.size() + lShift)
+        if(i < lNum.size())
         {
-            lval = lNum.at(i - lShift);
+            lval = lNum.at(i);
         }
 
         if(i >= rShift && i < rNum.size() + rShift)
         {
             rval = rNum.at(i - rShift);
+        }
+        else
+        {
+            if(narrower == 0)
+            {
+                break;
+            }
         }
 
         diff = lval - rval - narrower;
@@ -735,12 +740,8 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
             narrower = 0;
         }
 
-        diffNum.at(i) = diff;
+        lNum.at(i) = diff;
     }
-
-//    popZeroes(diffNum);
-
-    return diffNum;
 }
 
 vector<uint8_t> BigNumber::prodHelper(const vector<uint8_t>& lNum,
@@ -783,8 +784,7 @@ vector<uint8_t> BigNumber::prodOfVectors(const vector<uint8_t>& lNum,
     vector<uint8_t> prodNum;
     uint32_t shift = 0; // TODO: Rename
 
-    // TODO: Reserve
-//    prodNum.reserve(lNum.size() + rNum.size() - 1);
+    prodNum.reserve(lNum.size() + rNum.size());
 
     for(const auto& next : rNum)
     {
@@ -823,13 +823,11 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
                                          uint8_t& narrower) // TODO: RM
 {
     // FIXME: Empty case
-    vector<vector<uint8_t>> quotBuf;
     vector<uint8_t> quotNum;
     size_t lShift = 0;
     size_t rShift = 0;
 
-    // FIXME: reserve
-//    quotBuf.reserve()
+    quotNum.reserve(lNum.size());
 
     if(rNum.size() > lNum.size())
     {
@@ -910,7 +908,7 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
             }
 
             // TODO: Fix shift types
-            lNumPart = diffOfVectors(lNumPart, rNumPart, 0, shift);
+            quotHelper(lNumPart, rNumPart, shift);
             ++res;
 
             zeroTrack = trackZeroes(lNumPart, zeroTrack); // TODO: Rename
@@ -1070,99 +1068,5 @@ bool BigNumber::isVectorLesser(const vector<uint8_t>& lNum,
         }
     }
 
-
-//    if(lNum.size() > rNum.size())
-//    {
-//        lShift = lNum.size() - rNum.size();
-//        i = rNum.size();
-//    }
-//    else
-//    {
-//        rShift = rNum.size() - lNum.size();
-//        i = lNum.size();
-//    }
-
-//    for(size_t i = 0; i < lNum.size(); ++i)
-//    {
-//        if(lNum.at(i + lShift) < rNum.at(i + rShift))
-//        {
-//            return true; // BUG
-//        }
-
-//        if(lNum.at(i + lShift) > rNum.at(i + rShift))
-//        {
-//            return false;
-//        }
-//    }
-
     return false;
 }
-
-//// NOTE: Reversal
-//// TODO: Must be equal by size, rename
-//bool BigNumber::isVectorLesser(const vector<uint8_t>& lNum,
-//                               const vector<uint8_t>& rNum)
-//{
-//    if(lNum.size() < rNum.size())
-//    {
-//        return true;
-//    }
-
-//    if(lNum.size() > rNum.size())
-//    {
-//        return false;
-//    }
-
-//    for(size_t i = 0; i < lNum.size(); ++i)
-//    {
-//        if(lNum.at(i) < rNum.at(i))
-//        {
-//            return true;
-//        }
-
-//        if(lNum.at(i) > rNum.at(i))
-//        {
-//            return false;
-//        }
-//    }
-
-//    // Equal
-//    return false;
-//}
-
-//bool BigNumber::isVectorLesser(const vector<uint8_t>& lNum,
-//                               const vector<uint8_t>& rNum)
-//{
-//    // NOTE: Shift is unnecessary
-//    size_t lShift = 0;
-//    size_t rShift = 0;
-//    size_t i = 0;
-
-//    if(lNum.size() > rNum.size())
-//    {
-//        lShift = lNum.size() - rNum.size();
-//        i = rNum.size();
-//    }
-//    else
-//    {
-//        rShift = rNum.size() - lNum.size();
-//        i = lNum.size();
-//    }
-
-//    while(i > 0)
-//    {
-//        --i;
-
-//        if(lNum.at(i + lShift) < rNum.at(i + rShift))
-//        {
-//            return true;
-//        }
-
-//        if(lNum.at(i + lShift) > rNum.at(i + rShift))
-//        {
-//            return false;
-//        }
-//    }
-
-//    return false;
-//}

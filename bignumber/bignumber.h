@@ -60,20 +60,21 @@ private:
                                               uint8_t& narrower,
                                               uint32_t lShift,
                                               uint32_t rShift);
-    // TODO: Do smt
-    static std::vector<uint8_t> diffOfVectors(const std::vector<uint8_t>& lNum,
-                                              const std::vector<uint8_t>& rNum,
-                                              uint32_t lShift,
-                                              uint32_t rShift);
     // Calcs product of vectors
     static std::vector<uint8_t> prodHelper(const std::vector<uint8_t>& lNum,
                                            uint8_t multiplier);
+
     static std::vector<uint8_t> prodOfVectors(const std::vector<uint8_t>& lNum,
                                               const std::vector<uint8_t>& rNum,
                                               uint8_t& extender);
 
     static size_t trackZeroes(const std::vector<uint8_t>& vec, size_t pos);
+
     // Calcs quotient of vectors
+    static void quotHelper(std::vector<uint8_t>& lNum,
+                           const std::vector<uint8_t>& rNum,
+                           uint32_t rShift);
+
     static std::vector<uint8_t> quotOfVectors(const std::vector<uint8_t>& lNum,
                                               const std::vector<uint8_t>& rNum,
                                               size_t lUp,
