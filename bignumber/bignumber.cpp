@@ -99,14 +99,12 @@ BigNumber BigNumber::round() const
         return *this;
     }
 
-    constexpr int precision = 30;
-
-    if(_fractPos <= precision)
+    if(_fractPos <= _precision)
     {
         return *this;
     }
 
-    size_t pos = _fractPos - precision;
+    size_t pos = _fractPos - _precision;
     size_t digitPos = pos - 1;
     size_t digit;
 
@@ -230,7 +228,6 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
         return other;
     }
 
-    // FIXME: After * 0 pop vector
     BigNumber num;
     uint8_t extender = 0;
 
@@ -251,7 +248,7 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
     size_t driftPos = min(zeroPos, num._fractPos);
 
     num._numIntPart.insert(num._numIntPart.begin(), prod.begin() + driftPos, prod.end());
-    num._fractPos -= driftPos; // TODO: Check
+    num._fractPos -= driftPos;
 
     if(extender != 0)
     {
@@ -294,20 +291,10 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
         return BigNumber{_numIntPart, _fractPos, sign, Status::inf};
     }
 
-    // FIXME: Zero case
     BigNumber num;
     uint8_t narrower = 0;
 
     num._sign = sign;
-
-    // TODO: Uncomment
-//    if(*this == other)
-//    {
-//        num._numIntPart.emplace_back(1);
-//        num._fractPos = 0;
-
-//        return num;
-//    }
 
     size_t lUp = 0;
     size_t rUp = 0;
@@ -427,9 +414,9 @@ bool BigNumber::operator !=(const BigNumber& other) const
 
 ostream& operator <<(ostream& os, const BigNumber& num)
 {
-    // Output minus sign if this number is negative and has at least one digit
-    // FIXME: -0.0
-    // FIXME: Status::null
+    // Output number in decimal format (ex. -123.456789)
+    // Output 0, (-)Inf, (-)NaN in special cases
+
     if(num.isZero())
     {
         os << '0';
@@ -438,8 +425,6 @@ ostream& operator <<(ostream& os, const BigNumber& num)
     }
 
     if(num._sign == Sign::negative)
-//       &&
-//       (!num._numIntPart.empty() || num._numFractPart.empty()))
     {
         os << '-';
     }
@@ -458,11 +443,13 @@ ostream& operator <<(ostream& os, const BigNumber& num)
         return os;
     }
 
+    // Get current system locale to use correct decimal separator
+    static const auto& loc = use_facet<numpunct<char>>(cout.getloc());
     size_t i;
-    const auto& loc = use_facet<numpunct<char>>(cout.getloc());
 
     if(num._fractPos >= num._numIntPart.size())
     {
+        // Output significant zero that not presented in vector
         os << '0';
         os << loc.decimal_point();
         i = num._fractPos;
@@ -472,6 +459,7 @@ ostream& operator <<(ostream& os, const BigNumber& num)
         i = num._numIntPart.size();
     }
 
+    // Output little-endian number
     while(i > 0)
     {
         --i;
@@ -482,9 +470,11 @@ ostream& operator <<(ostream& os, const BigNumber& num)
         }
         else
         {
+            // Output significant zero that not presented in vector
             os << '0';
         }
 
+        // Output decimal separator if it is not the end of number
         if(i == num._fractPos && i != 0)
         {
             os << loc.decimal_point();
@@ -819,7 +809,6 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
                                          size_t precision,
                                          uint8_t& narrower) // TODO: RM
 {
-    // FIXME: Empty case
     vector<uint8_t> quotNum;
     size_t lShift = 0;
     size_t rShift = 0;
@@ -927,7 +916,7 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
             continue;
         }
 
-        if(lNumPart.empty() || narrower >= precision + 31) // TODO: Add precision const
+        if(lNumPart.empty() || narrower >= precision + _precision + 1)
         {
             break;
         }

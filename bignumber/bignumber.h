@@ -95,6 +95,8 @@ private:
                                const std::vector<uint8_t>& rNum);
 
 private:
+    // Number of digits after decimal separator for round() and arithmetics
+    static constexpr size_t _precision = 30;
     std::vector<uint8_t> _numIntPart;
     size_t _fractPos;
     bigNumber::Sign _sign;
