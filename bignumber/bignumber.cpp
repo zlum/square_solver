@@ -338,7 +338,7 @@ bool BigNumber::operator >(const BigNumber& other) const
         return false;
     }
 
-    return comparOfVectors(_numIntPart, _fractPos,
+    return compareOfVectors(_numIntPart, _fractPos,
                            other._numIntPart, other._fractPos, greater<>());
 }
 
@@ -362,7 +362,7 @@ bool BigNumber::operator <(const BigNumber& other) const
         return false;
     }
 
-    return comparOfVectors(_numIntPart, _fractPos,
+    return compareOfVectors(_numIntPart, _fractPos,
                            other._numIntPart, other._fractPos, less<>());
 }
 
@@ -580,11 +580,6 @@ Sign BigNumber::prodQuotSign(const Sign& lSign, const Sign& rSign)
     }
 
     return Sign::negative;
-}
-
-void BigNumber::setSign(Sign sign)
-{
-    _sign = sign;
 }
 
 // NOTE: Dupe from builder
@@ -998,7 +993,7 @@ void BigNumber::quotHelperSubtract(vector<uint8_t>& lNum,
     }
 }
 
-bool BigNumber::comparOfVectors(const vector<uint8_t>& lNum,
+bool BigNumber::compareOfVectors(const vector<uint8_t>& lNum,
                                 size_t lFractPos,
                                 const vector<uint8_t>& rNum,
                                 size_t rFractPos,

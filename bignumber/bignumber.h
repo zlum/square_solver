@@ -91,11 +91,12 @@ private:
                                    const std::vector<uint8_t>& rNum,
                                    size_t rShift);
 
-    static bool comparOfVectors(const std::vector<uint8_t>& lNum,
-                                size_t lFractPos,
-                                const std::vector<uint8_t>& rNum,
-                                size_t rFractPos,
-                                const std::function<bool(int, int)>& functor);
+    static bool compareOfVectors(const std::vector<uint8_t>& lNum,
+                                 size_t lFractPos,
+                                 const std::vector<uint8_t>& rNum,
+                                 size_t rFractPos,
+                                 const std::function<bool(int, int)>& functor);
+
 
     static size_t trackZeroes(const std::vector<uint8_t>& vec, size_t pos);
 
