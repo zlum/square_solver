@@ -14,12 +14,4 @@ namespace bigNumber
         nan,
         normal
     };
-
-    enum class ComareRes: int
-    {
-        less,
-        equal,
-        greater
-    };
-
 } // namespace bigNumber

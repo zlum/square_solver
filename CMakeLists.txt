@@ -13,7 +13,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 endif()
 
 set(CMAKE_CXX_STANDARD 14)
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(BIGNUMBER
@@ -22,6 +21,8 @@ set(BIGNUMBER
     bignumber/bignumberbuilder.cpp
     bignumber/bignumberbuilder.h
     bignumber/bignumbertypes.h
+    bignumber/numvector.cpp
+    bignumber/numvector.h
 )
 
 set(PRODUCERCONSUMER
