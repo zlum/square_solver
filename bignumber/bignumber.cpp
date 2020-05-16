@@ -147,7 +147,7 @@ BigNumber BigNumber::operator -() const
     BigNumber num(*this);
 
     // Set inverted sign
-    num.setSign(_sign == Sign::positive ? Sign::negative : Sign::positive);
+    num._sign = (_sign == Sign::positive ? Sign::negative : Sign::positive);
 
     return num;
 }
@@ -534,6 +534,7 @@ BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
 
 BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
 {
+    // Subtract right BigNumber from the left one
     BigNumber num;
     uint8_t narrower = 0;
     size_t lShift = 0;
@@ -706,6 +707,33 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
     return diffNum;
 }
 
+vector<uint8_t> BigNumber::prodOfVectors(const vector<uint8_t>& lNum,
+                                         const vector<uint8_t>& rNum,
+                                         uint8_t& carry)
+{
+    vector<uint8_t> prodNum; // Result dummy
+    size_t rShift = 0; // Shift of right number in sum to shape correct column
+
+    // Reserve maximum possible capacity
+    prodNum.reserve(lNum.size() + rNum.size());
+
+    for(const auto& next : rNum)
+    {
+        prodNum = sumOfVectors(prodNum, prodHelperMultiply(lNum, next),
+                               carry, 0, rShift);
+
+        if(carry != 0)
+        {
+            prodNum.emplace_back(carry);
+            carry = 0;
+        }
+
+        ++rShift;
+    }
+
+    return prodNum;
+}
+
 vector<uint8_t> BigNumber::prodHelperMultiply(const vector<uint8_t>& lNum,
                                               uint8_t multiplier)
 {
@@ -741,46 +769,6 @@ vector<uint8_t> BigNumber::prodHelperMultiply(const vector<uint8_t>& lNum,
     return prodVec;
 }
 
-vector<uint8_t> BigNumber::prodOfVectors(const vector<uint8_t>& lNum,
-                                         const vector<uint8_t>& rNum,
-                                         uint8_t& carry)
-{
-    vector<uint8_t> prodNum; // Result dummy
-    size_t rShift = 0; // Shift of right number in sum to shape correct column
-
-    // Reserve maximum possible capacity
-    prodNum.reserve(lNum.size() + rNum.size());
-
-    for(const auto& next : rNum)
-    {
-        prodNum = sumOfVectors(prodNum, prodHelperMultiply(lNum, next),
-                               carry, 0, rShift);
-
-        if(carry != 0)
-        {
-            prodNum.emplace_back(carry);
-            carry = 0;
-        }
-
-        ++rShift;
-    }
-
-    return prodNum;
-}
-
-size_t BigNumber::trackZeroes(const vector<uint8_t>& vec, size_t pos)
-{
-    for(size_t i = pos; i < vec.size(); ++i)
-    {
-        if(vec.at(i) != 0)
-        {
-            return i;
-        }
-    }
-
-    return vec.size();
-}
-
 vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
                                          const vector<uint8_t>& rNum,
                                          size_t lUp,
@@ -810,7 +798,6 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
     lShift = max(int64_t(0), prealloCounter);
 
     // Insert in reversed order
-    // TODO: fix initial digit count with rUp
     lNumPart.insert(lNumPart.begin(), lNum.rbegin(), lNum.rend() - lShift);
     rNumPart.insert(rNumPart.begin(), rNum.rbegin(), rNum.rend());
 
@@ -872,7 +859,6 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
                 shift = lNumPart.size() - rNumPart.size();
             }
 
-            // TODO: Fix shift types
             quotHelperSubtract(lNumPart, rNumPart, shift);
             ++res;
 
@@ -1064,4 +1050,18 @@ bool BigNumber::comparOfVectors(const vector<uint8_t>& lNum,
     // If any digits in vector are same,
     // compare by number of digits after decimal point
     return functor(lFractPos, rFractPos);
+}
+
+size_t BigNumber::trackZeroes(const vector<uint8_t>& vec, size_t pos)
+{
+    // Find position of the first non-zero digit from (pos) to the end of (vec)
+    for(size_t i = pos; i < vec.size(); ++i)
+    {
+        if(vec.at(i) != 0)
+        {
+            return i;
+        }
+    }
+
+    return vec.size();
 }
