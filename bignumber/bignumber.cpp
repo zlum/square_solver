@@ -20,7 +20,7 @@ BigNumber::BigNumber():
 {
 }
 
-BigNumber::BigNumber(vector<uint8_t> numIntPart,
+BigNumber::BigNumber(NumVector numIntPart,
                      size_t fractPos,
                      Sign sign,
                      Status status):
@@ -131,7 +131,7 @@ BigNumber BigNumber::round() const
         return BigNumber{{}, 0, _sign, _status};
     }
 
-    std::vector<uint8_t> num;
+    NumVector num;
     num.insert(num.begin(), _numIntPart.begin() + pos, _numIntPart.end());
     size_t numFractPos = _fractPos - (_numIntPart.size() - num.size());
     BigNumber res{num, numFractPos, _sign, _status};
@@ -252,7 +252,7 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
     num._fractPos = _fractPos + other._fractPos; // Determine decimal position
 
     // Multiply vectors. Additional digit will be written to (carry)
-    vector<uint8_t> prod = prodOfVectors(_numIntPart, other._numIntPart, carry);
+    NumVector prod = prodOfVectors(_numIntPart, other._numIntPart, carry);
 
     // NOTE: Zero cleaner
     size_t zeroPos = trackZeroes(prod, 0);
@@ -520,7 +520,7 @@ BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
     }
 
     // Sum vectors. Additional digit will be written to (carry)
-    vector<uint8_t> sum = sumOfVectors(leftNum._numIntPart,
+    NumVector sum = sumOfVectors(leftNum._numIntPart,
                                        rightNum._numIntPart, carry,
                                        lShift, rShift);
 

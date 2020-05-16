@@ -1,6 +1,7 @@
 #pragma once
 
 #include "bignumbertypes.h"
+#include "numvector.h"
 
 #include <cstdint>
 #include <iostream>
@@ -10,7 +11,7 @@ class BigNumber final
 {
 public:
     explicit BigNumber();
-    explicit BigNumber(std::vector<uint8_t> numIntPart, size_t fractPos,
+    explicit BigNumber(numVector::NumVector numIntPart, size_t fractPos,
                        bigNumber::Sign sign, bigNumber::Status status);
 
     // Check if number == 0
@@ -53,7 +54,7 @@ private:
 private:
     // Number of digits after decimal separator for round() and arithmetics
     static constexpr size_t _precision = 30;
-    std::vector<uint8_t> _numIntPart;
+    numVector::NumVector _numIntPart;
     size_t _fractPos;
     bigNumber::Sign _sign;
     bigNumber::Status _status;

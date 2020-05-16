@@ -6,52 +6,55 @@
 
 namespace numVector
 {
+    using NumVectorElement = uint8_t;
+    using NumVector = std::vector<NumVectorElement>;
+
     // Calc sum of vectors. Additional digit will be written to (carry)
-    std::vector<uint8_t> sumOfVectors(const std::vector<uint8_t>& lNum,
-                                             const std::vector<uint8_t>& rNum,
+    NumVector sumOfVectors(const NumVector& lNum,
+                                             const NumVector& rNum,
                                              uint8_t& carry,
                                              size_t lShift,
                                              size_t rShift);
 
     // Calcs difference of vectors. Additional digit will be written to (carry)
-    std::vector<uint8_t> diffOfVectors(const std::vector<uint8_t>& lNum,
-                                              const std::vector<uint8_t>& rNum,
+    NumVector diffOfVectors(const NumVector& lNum,
+                                              const NumVector& rNum,
                                               uint8_t& carry,
                                               size_t lShift,
                                               size_t rShift);
 
     // Calcs product of vectors. Additional digit will be written to (carry)
-    std::vector<uint8_t> prodOfVectors(const std::vector<uint8_t>& lNum,
-                                              const std::vector<uint8_t>& rNum,
+    NumVector prodOfVectors(const NumVector& lNum,
+                                              const NumVector& rNum,
                                               uint8_t& carry);
 
-    std::vector<uint8_t> prodHelperMultiply(const std::vector<uint8_t>& lNum,
+    NumVector prodHelperMultiply(const NumVector& lNum,
                                                    uint8_t multiplier);
 
     // Calcs quotient of vectors
     // Decimal point position will be written to (carry)
-    std::vector<uint8_t> quotOfVectors(const std::vector<uint8_t>& lNum,
-                                              const std::vector<uint8_t>& rNum,
+    NumVector quotOfVectors(const NumVector& lNum,
+                                              const NumVector& rNum,
                                               size_t lShift,
                                               size_t rShift,
                                               size_t precision,
                                               size_t& decPos);
 
-    bool quotHelperLess(const std::vector<uint8_t>& lNum,
-                               const std::vector<uint8_t>& rNum);
+    bool quotHelperLess(const NumVector& lNum,
+                               const NumVector& rNum);
 
-    void quotHelperSubtract(std::vector<uint8_t>& lNum,
-                                   const std::vector<uint8_t>& rNum,
+    void quotHelperSubtract(NumVector& lNum,
+                                   const NumVector& rNum,
                                    size_t rShift);
 
-    bool compareOfVectors(const std::vector<uint8_t>& lNum,
+    bool compareOfVectors(const NumVector& lNum,
                                  size_t lFractPos,
-                                 const std::vector<uint8_t>& rNum,
+                                 const NumVector& rNum,
                                  size_t rFractPos,
                                  const std::function<bool(int, int)>& functor);
 
     // nonsignificant digit
-    void popZeroes(std::vector<uint8_t>& vec);
+    void popZeroes(NumVector& vec);
     // Find first non-zero digit from the end of number to begin
-    size_t trackZeroes(const std::vector<uint8_t>& vec, size_t pos);
+    size_t trackZeroes(const NumVector& vec, size_t pos);
 } // namespace numVector

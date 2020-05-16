@@ -2,16 +2,17 @@
 
 #include <algorithm>
 
+using namespace numVector;
 using namespace std;
 
-vector<uint8_t> numVector::sumOfVectors(const vector<uint8_t>& lNum,
-                                        const vector<uint8_t>& rNum,
+NumVector numVector::sumOfVectors(const NumVector& lNum,
+                                        const NumVector& rNum,
                                         uint8_t& carry,
                                         size_t lShift,
                                         size_t rShift)
 {
     // Sum vectors. Additional digit will be written to (carry)
-    vector<uint8_t> sumNum;
+    NumVector sumNum;
     size_t maxSize = max(lNum.size() + lShift, rNum.size() + rShift);
 
     // Reserve maximum possible capacity
@@ -52,14 +53,14 @@ vector<uint8_t> numVector::sumOfVectors(const vector<uint8_t>& lNum,
     return sumNum;
 }
 
-vector<uint8_t> numVector::diffOfVectors(const vector<uint8_t>& lNum,
-                                         const vector<uint8_t>& rNum,
+NumVector numVector::diffOfVectors(const NumVector& lNum,
+                                         const NumVector& rNum,
                                          uint8_t& carry,
                                          size_t lShift,
                                          size_t rShift)
 {
     // Subtract vectors. Additional digit will be written to (carry)
-    vector<uint8_t> diffNum; // Result dummy
+    NumVector diffNum; // Result dummy
     size_t maxSize = max(lNum.size() + lShift, rNum.size() + rShift);
 
     // Reserve maximum possible capacity
@@ -111,11 +112,11 @@ vector<uint8_t> numVector::diffOfVectors(const vector<uint8_t>& lNum,
     return diffNum;
 }
 
-vector<uint8_t> numVector::prodOfVectors(const vector<uint8_t>& lNum,
-                                         const vector<uint8_t>& rNum,
+NumVector numVector::prodOfVectors(const NumVector& lNum,
+                                         const NumVector& rNum,
                                          uint8_t& carry)
 {
-    vector<uint8_t> prodNum; // Result dummy
+    NumVector prodNum; // Result dummy
     size_t rShift = 0; // Shift of right number in sum to shape correct column
 
     // Reserve maximum possible capacity
@@ -139,11 +140,11 @@ vector<uint8_t> numVector::prodOfVectors(const vector<uint8_t>& lNum,
     return prodNum;
 }
 
-vector<uint8_t> numVector::prodHelperMultiply(const vector<uint8_t>& lNum,
+NumVector numVector::prodHelperMultiply(const NumVector& lNum,
                                               uint8_t multiplier)
 {
     // Multiply vector by (multiplier)
-    vector<uint8_t> prodVec; // Result dummy
+    NumVector prodVec; // Result dummy
     uint8_t carry = 0;
 
     // Reserve maximum possible capacity
@@ -175,14 +176,14 @@ vector<uint8_t> numVector::prodHelperMultiply(const vector<uint8_t>& lNum,
     return prodVec;
 }
 
-vector<uint8_t> numVector::quotOfVectors(const vector<uint8_t>& lNum,
-                                         const vector<uint8_t>& rNum,
+NumVector numVector::quotOfVectors(const NumVector& lNum,
+                                         const NumVector& rNum,
                                          size_t lShift,
                                          size_t rShift,
                                          size_t precision,
                                          size_t& decPos)
 {
-    vector<uint8_t> quotNum; // Result dummy
+    NumVector quotNum; // Result dummy
     size_t lAddShift = 0;
 
     // Reserve approximate possible capacity (can be significantly different)
@@ -195,8 +196,8 @@ vector<uint8_t> numVector::quotOfVectors(const vector<uint8_t>& lNum,
     }
 
     // Parts of numbers
-    vector<uint8_t> dividend;
-    vector<uint8_t> divisor(rShift);
+    NumVector dividend;
+    NumVector divisor(rShift);
 
     lAddShift = max(int(int64_t(0)), int(lAddShift - rShift));
 
@@ -306,8 +307,8 @@ vector<uint8_t> numVector::quotOfVectors(const vector<uint8_t>& lNum,
     return quotNum;
 }
 
-bool numVector::quotHelperLess(const vector<uint8_t>& lNum,
-                               const vector<uint8_t>& rNum)
+bool numVector::quotHelperLess(const NumVector& lNum,
+                               const NumVector& rNum)
 {
     // Check if left vector number less than the right one
     // Vactors have to be prepared in quotOfVectors() function
@@ -350,8 +351,8 @@ bool numVector::quotHelperLess(const vector<uint8_t>& lNum,
     return false;
 }
 
-void numVector::quotHelperSubtract(vector<uint8_t>& lNum,
-                                   const vector<uint8_t>& rNum,
+void numVector::quotHelperSubtract(NumVector& lNum,
+                                   const NumVector& rNum,
                                    size_t rShift)
 {
     // Subtract right vector from the left inplace
@@ -409,9 +410,9 @@ void numVector::quotHelperSubtract(vector<uint8_t>& lNum,
     }
 }
 
-bool numVector::compareOfVectors(const vector<uint8_t>& lNum,
+bool numVector::compareOfVectors(const NumVector& lNum,
                                 size_t lFractPos,
-                                const vector<uint8_t>& rNum,
+                                const NumVector& rNum,
                                 size_t rFractPos,
                                 const function<bool(int, int)>& functor)
 {
@@ -463,7 +464,7 @@ bool numVector::compareOfVectors(const vector<uint8_t>& lNum,
     return functor(lFractPos, rFractPos);
 }
 
-void numVector::popZeroes(vector<uint8_t>& vec)
+void numVector::popZeroes(NumVector& vec)
 {
     // Remove zeroes from the back of vector
     while(!vec.empty())
@@ -477,7 +478,7 @@ void numVector::popZeroes(vector<uint8_t>& vec)
     }
 }
 
-size_t numVector::trackZeroes(const vector<uint8_t>& vec, size_t pos)
+size_t numVector::trackZeroes(const NumVector& vec, size_t pos)
 {
     // Find position of the first non-zero digit from (pos) to the end of (vec)
     for(size_t i = pos; i < vec.size(); ++i)

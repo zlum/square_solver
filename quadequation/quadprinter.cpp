@@ -3,10 +3,10 @@
 #include <cmath>
 #include <iostream>
 
-using namespace std;
 using namespace bigNumber;
+using namespace std;
 
-QuadPrinter::QuadPrinter(std::shared_ptr<Buffer<QuadEquation>> inputBuf):
+QuadPrinter::QuadPrinter(shared_ptr<Buffer<QuadEquation>> inputBuf):
     _buf(inputBuf)
 {
 }
