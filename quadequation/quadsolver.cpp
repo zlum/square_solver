@@ -3,8 +3,8 @@
 #include <cmath>
 #include <limits>
 
-using namespace std;
 using namespace bigNumber;
+using namespace std;
 
 QuadSolver::QuadSolver(shared_ptr<Buffer<QuadCoeffs>> inputBuf,
                        shared_ptr<Buffer<QuadEquation>> outputBuf):

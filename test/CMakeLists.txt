@@ -16,6 +16,8 @@ set(BIGNUMBER_TEST
     ../bignumber/bignumberbuilder.cpp
     ../bignumber/bignumberbuilder.h
     ../bignumber/bignumbertypes.h
+    ../bignumber/numvector.cpp
+    ../bignumber/numvector.h
 )
 
 set(SRC_TEST
@@ -25,7 +27,7 @@ set(SRC_TEST
 set(SRC
     ${SRC_TEST}
     main.cpp
-    test.cpp
+    bignumber.cpp
 )
 
 add_executable(${PROJECT_NAME}
