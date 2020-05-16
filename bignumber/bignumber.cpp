@@ -60,25 +60,36 @@ Status BigNumber::getStatus() const
 
 BigNumber BigNumber::sqrt() const
 {
+    // Ignore Inf and NaN numbers
     if(_status != Status::normal)
     {
         return *this;
     }
 
+    // Result is NaN if number <= 0
     if(_sign == Sign::negative || isZero())
     {
         return BigNumber{_numIntPart, _fractPos, _sign, Status::nan};
     }
 
-    static const BigNumber Big0_5{{5}, 1, Sign::positive, Status::normal};
-
     // Newton's method
+    // https://helloacm.com/coding-exercise-implement-integer-square-root-c-online-judge/
+    static const BigNumber Big0_5{{5}, 1, Sign::positive, Status::normal};
     BigNumber dividend = *this;
     BigNumber val = *this;
     BigNumber last;
 
-    int prec = min(size_t(64), max(size_t(8), _numIntPart.size() * 5));
-    int i = 0;
+    // Number of approximations fixed in between 8 and 64
+    // Based on number length because use of standart method of checking
+    // precision by subtraction is inefficient
+    constexpr size_t maxApproxNum = 64;
+    constexpr size_t minApproxNum = 8;
+    constexpr size_t approxStepPerNum = 5;
+
+    size_t i = 0;
+    size_t approxNum = min(size_t(maxApproxNum),
+                           max(size_t(minApproxNum),
+                               _numIntPart.size() * approxStepPerNum));
 
     do
     {
@@ -86,8 +97,7 @@ BigNumber BigNumber::sqrt() const
         last = val;
         val = (val + dividend / val) * Big0_5;
     }
-//    while(last - val > BigPrec); // Precision
-    while(i < prec); // Precision
+    while(i < approxNum);
 
     return val;
 }
@@ -144,6 +154,7 @@ BigNumber BigNumber::operator -() const
 
 BigNumber BigNumber::operator +(const BigNumber& other) const
 {
+    // If left or right number is Inf or NaN then return it w/o changes
     if(_status != Status::normal)
     {
         return *this;
@@ -154,7 +165,7 @@ BigNumber BigNumber::operator +(const BigNumber& other) const
         return other;
     }
 
-    // Sign managment and select proper function
+    // Sign managment and selecting of proper function
     // diff() has to be called with correct number signs
     // sum() ignores number signs
 
@@ -181,6 +192,7 @@ BigNumber BigNumber::operator +(const BigNumber& other) const
 
 BigNumber BigNumber::operator -(const BigNumber& other) const
 {
+    // If left or right number is Inf or NaN then return it w/o changes
     if(_status != Status::normal)
     {
         return *this;
@@ -191,7 +203,7 @@ BigNumber BigNumber::operator -(const BigNumber& other) const
         return other;
     }
 
-    // Sign managment and select proper function
+    // Sign managment and selecting of proper function
     // diff() has to be called with correct number signs
     // sum() ignores number signs
 
@@ -218,6 +230,7 @@ BigNumber BigNumber::operator -(const BigNumber& other) const
 
 BigNumber BigNumber::operator *(const BigNumber& other) const
 {
+    // If left or right number is Inf or NaN then return it w/o changes
     if(_status != Status::normal)
     {
         return *this;
@@ -228,31 +241,27 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
         return other;
     }
 
-    BigNumber num;
-    uint8_t extender = 0;
+    BigNumber num; // Result dummy
+    uint8_t carry = 0; // Increase number size or change next number digit
 
-    if(_sign == other._sign)
+    num._sign = prodQuotSign(_sign, other._sign); // Determine sign
+    num._fractPos = _fractPos + other._fractPos; // Determine decimal position
+
+    // NOTE: Zero cleaner
+//    vector<uint8_t> prod = prodOfVectors(_numIntPart, other._numIntPart, carry);
+
+//    size_t zeroPos = trackZeroes(prod, 0);
+//    size_t driftPos = min(zeroPos, size_t(0));
+
+//    num._numIntPart.insert(num._numIntPart.begin(), prod.begin() + driftPos, prod.end());
+//    num._fractPos -= driftPos;
+
+    // Multiply vectors. Additional digit will be written to (carry)
+    num._numIntPart = prodOfVectors(_numIntPart, other._numIntPart, carry);
+
+    if(carry != 0)
     {
-        num._sign = Sign::positive;
-    }
-    else
-    {
-        num._sign = Sign::negative;
-    }
-
-    num._fractPos = _fractPos + other._fractPos;
-
-    vector<uint8_t> prod = prodOfVectors(_numIntPart, other._numIntPart, extender);
-
-    size_t zeroPos = trackZeroes(prod, 0);
-    size_t driftPos = min(zeroPos, num._fractPos);
-
-    num._numIntPart.insert(num._numIntPart.begin(), prod.begin() + driftPos, prod.end());
-    num._fractPos -= driftPos;
-
-    if(extender != 0)
-    {
-        num._numIntPart.emplace_back(extender);
+        num._numIntPart.emplace_back(carry);
     }
 
     return num;
@@ -260,6 +269,7 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
 
 BigNumber BigNumber::operator /(const BigNumber& other) const
 {
+    // If left or right number is Inf or NaN then return it w/o changes
     if(_status != Status::normal)
     {
         return *this;
@@ -270,17 +280,10 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
         return other;
     }
 
-    Sign sign = Sign::positive;
+    Sign sign = prodQuotSign(_sign, other._sign); // Determine sign
 
-    if(_sign == other._sign)
-    {
-        sign = Sign::positive;
-    }
-    else
-    {
-        sign = Sign::negative;
-    }
-
+    // 0 / 0 == NaN, x / 0 == Inf
+    // Sign is correct for division operation. Other data same as (this)
     if(other.isZero())
     {
         if(isZero())
@@ -291,13 +294,13 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
         return BigNumber{_numIntPart, _fractPos, sign, Status::inf};
     }
 
+    // TODO: Comments
     BigNumber num;
     uint8_t narrower = 0;
-
-    num._sign = sign;
-
     size_t lUp = 0;
     size_t rUp = 0;
+
+    num._sign = sign;
 
     if(_fractPos > other._fractPos)
     {
@@ -553,6 +556,16 @@ BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
     }
 
     return num;
+}
+
+Sign BigNumber::prodQuotSign(const Sign& lSign, const Sign& rSign)
+{
+    if(lSign == rSign)
+    {
+        return Sign::positive;
+    }
+
+    return Sign::negative;
 }
 
 void BigNumber::setSign(Sign sign)

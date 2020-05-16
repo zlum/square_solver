@@ -10,18 +10,18 @@ public:
     explicit ProducerConsumer();
     virtual ~ProducerConsumer();
 
-    // Starts worker() function in thread
+    // Start worker() function in thread
     void start();
-    // Joins to the worker thread if it is joinable
+    // Join to the worker thread if it is joinable
     void join();
     // Set work flag as false
     virtual void stopLater();
 
-    // Returns reference to work flag
+    // Return reference to work flag
     const bool& getWorkFlag() const;
 
 private:
-    // Starts in _workerThread by start() call
+    // Run in _workerThread by start() call
     virtual void worker() = 0;
 
 private:

@@ -28,7 +28,7 @@ private:
     static BigNumber calcRoot(const BigNumber& sqrtDsc, bool isNegative,
                               const BigNumber& a, const BigNumber& b);
 
-    // Calculates roots of quadratic equation
+    // Calculate roots of quadratic equation
     // Using NaN as no root mark
     static QuadRoots calcRoots(const QuadCoeffs& coeffs);
 

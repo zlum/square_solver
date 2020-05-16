@@ -8,11 +8,10 @@ namespace bigNumber
         negative
     };
 
-    // TODO: Use
     enum class Status: int
     {
-        nan,
         inf,
+        nan,
         normal
     };
 

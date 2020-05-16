@@ -22,7 +22,7 @@ private:
     // ProducerConsumer
     virtual void worker() override;
 
-    // Prints quadratic equation in format:
+    // Print quadratic equation in format:
     // (a b c) => (x1, x2)
     static void printQuadEquation(const QuadEquation& equation);
 
