@@ -6,30 +6,30 @@
 
 namespace numVector
 {
-    using NumVectorElement = uint8_t;
-    using NumVector = std::vector<NumVectorElement>;
+    using Element = uint8_t;
+    using NumVector = std::vector<Element>;
 
     // Calc sum of vectors. Additional digit will be written to (carry)
     NumVector sumOfVectors(const NumVector& lNum,
                                              const NumVector& rNum,
-                                             uint8_t& carry,
+                                             Element& carry,
                                              size_t lShift,
                                              size_t rShift);
 
     // Calcs difference of vectors. Additional digit will be written to (carry)
     NumVector diffOfVectors(const NumVector& lNum,
                                               const NumVector& rNum,
-                                              uint8_t& carry,
+                                              Element& carry,
                                               size_t lShift,
                                               size_t rShift);
 
     // Calcs product of vectors. Additional digit will be written to (carry)
     NumVector prodOfVectors(const NumVector& lNum,
                                               const NumVector& rNum,
-                                              uint8_t& carry);
+                                              Element& carry);
 
     NumVector prodHelperMultiply(const NumVector& lNum,
-                                                   uint8_t multiplier);
+                                                   Element multiplier);
 
     // Calcs quotient of vectors
     // Decimal point position will be written to (carry)

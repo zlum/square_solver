@@ -246,7 +246,7 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
     }
 
     BigNumber num; // Result dummy
-    uint8_t carry = 0; // Increase number size or change next number digit
+    Element carry = 0; // Increase number size or change next number digit
 
     num._sign = prodQuotSign(_sign, other._sign); // Determine sign
     num._fractPos = _fractPos + other._fractPos; // Determine decimal position
@@ -503,7 +503,7 @@ BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
 {
     // Sum two BigNumbers irrespective of sign or status
     BigNumber num;
-    uint8_t carry = 0;
+    Element carry = 0;
     size_t lShift = 0;
     size_t rShift = 0;
 
@@ -544,7 +544,7 @@ BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
 {
     // Subtract right BigNumber from the left one
     BigNumber num;
-    uint8_t narrower = 0;
+    Element narrower = 0;
     size_t lShift = 0;
     size_t rShift = 0;
 

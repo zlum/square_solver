@@ -7,7 +7,7 @@ using namespace std;
 
 NumVector numVector::sumOfVectors(const NumVector& lNum,
                                         const NumVector& rNum,
-                                        uint8_t& carry,
+                                        Element& carry,
                                         size_t lShift,
                                         size_t rShift)
 {
@@ -21,9 +21,9 @@ NumVector numVector::sumOfVectors(const NumVector& lNum,
     // Sum vectors digit by digit
     for(size_t i = 0; i < maxSize; ++i)
     {
-        uint8_t sum = 0;
-        uint8_t lval = 0;
-        uint8_t rval = 0;
+        Element sum = 0;
+        Element lval = 0;
+        Element rval = 0;
 
         if(i >= lShift && i < lNum.size() + lShift)
         {
@@ -55,7 +55,7 @@ NumVector numVector::sumOfVectors(const NumVector& lNum,
 
 NumVector numVector::diffOfVectors(const NumVector& lNum,
                                          const NumVector& rNum,
-                                         uint8_t& carry,
+                                         Element& carry,
                                          size_t lShift,
                                          size_t rShift)
 {
@@ -70,8 +70,8 @@ NumVector numVector::diffOfVectors(const NumVector& lNum,
     for(size_t i = 0; i < maxSize; ++i)
     {
         int diff = 0;
-        uint8_t lval = 0;
-        uint8_t rval = 0;
+        Element lval = 0;
+        Element rval = 0;
 
         if(i >= lShift && i < lNum.size() + lShift)
         {
@@ -114,7 +114,7 @@ NumVector numVector::diffOfVectors(const NumVector& lNum,
 
 NumVector numVector::prodOfVectors(const NumVector& lNum,
                                          const NumVector& rNum,
-                                         uint8_t& carry)
+                                         Element& carry)
 {
     NumVector prodNum; // Result dummy
     size_t rShift = 0; // Shift of right number in sum to shape correct column
@@ -141,11 +141,11 @@ NumVector numVector::prodOfVectors(const NumVector& lNum,
 }
 
 NumVector numVector::prodHelperMultiply(const NumVector& lNum,
-                                              uint8_t multiplier)
+                                              Element multiplier)
 {
     // Multiply vector by (multiplier)
     NumVector prodVec; // Result dummy
-    uint8_t carry = 0;
+    Element carry = 0;
 
     // Reserve maximum possible capacity
     prodVec.reserve(lNum.size() + 1);
@@ -153,7 +153,7 @@ NumVector numVector::prodHelperMultiply(const NumVector& lNum,
     // Multiply digit by digit
     for(const auto& next : lNum)
     {
-        uint8_t prod = (next * multiplier) + carry;
+        Element prod = (next * multiplier) + carry;
 
         if(prod > 9)
         {
@@ -220,7 +220,7 @@ NumVector numVector::quotOfVectors(const NumVector& lNum,
         if(quotHelperLess(dividend, divisor))
         {
             // Have to get additional digit to dividend
-            uint8_t digit;
+            Element digit;
 
             ++i;
 
@@ -321,7 +321,7 @@ bool numVector::quotHelperLess(const NumVector& lNum,
         return true;
     }
 
-    uint8_t rval = 0;
+    Element rval = 0;
 
     if(lNum.size() > rNum.size())
     {
@@ -357,15 +357,15 @@ void numVector::quotHelperSubtract(NumVector& lNum,
 {
     // Subtract right vector from the left inplace
     // Vactors have to be prepared in quotOfVectors() function
-    uint8_t carry = 0;
+    Element carry = 0;
 
     size_t i = lNum.size();
 
     while(i > 0)
     {
         int diff = 0;
-        uint8_t lval = 0;
-        uint8_t rval = 0;
+        Element lval = 0;
+        Element rval = 0;
 
         --i;
 

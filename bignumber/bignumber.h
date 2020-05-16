@@ -3,9 +3,7 @@
 #include "bignumbertypes.h"
 #include "numvector.h"
 
-#include <cstdint>
 #include <iostream>
-#include <vector>
 
 class BigNumber final
 {
