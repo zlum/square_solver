@@ -74,10 +74,9 @@ private:
     // Decimal point position will be written to (carry)
     static std::vector<uint8_t> quotOfVectors(const std::vector<uint8_t>& lNum,
                                               const std::vector<uint8_t>& rNum,
-                                              size_t lUp,
-                                              size_t rUp, // TODO: Fix naming
-                                              size_t precision,
-                                              uint8_t& narrower);
+                                              size_t lShift,
+                                              size_t rShift,
+                                              size_t& decPos);
 
     static bool quotHelperLess(const std::vector<uint8_t>& lNum,
                                const std::vector<uint8_t>& rNum);

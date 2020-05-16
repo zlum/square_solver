@@ -294,26 +294,28 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
         return BigNumber{_numIntPart, _fractPos, sign, Status::inf};
     }
 
-    // TODO: Comments
     BigNumber num;
-    uint8_t narrower = 0;
-    size_t lUp = 0;
-    size_t rUp = 0;
+    size_t decPos = 0;
+    size_t lShift = 0;
+    size_t rShift = 0;
 
     num._sign = sign;
 
+    // Determine shift to shape correct column
     if(_fractPos > other._fractPos)
     {
-        rUp = _fractPos - other._fractPos;
+        rShift = _fractPos - other._fractPos;
     }
 
     if(other._fractPos > _fractPos)
     {
-        lUp = other._fractPos - _fractPos;
+        lShift = other._fractPos - _fractPos;
     }
 
-    num._numIntPart = quotOfVectors(_numIntPart, other._numIntPart, 0, rUp, lUp, narrower);
-    num._fractPos = narrower - lUp; //abs(int64_t(_fractPos - other._fractPos)); // TODO: Rename
+    // Multiply vectors. Decimal point position will be written to (decPos)
+    num._numIntPart = quotOfVectors(_numIntPart, other._numIntPart,
+                                    lShift, rShift, decPos);
+    num._fractPos = decPos - lShift;
 
     return num;
 }
@@ -584,6 +586,7 @@ vector<uint8_t> BigNumber::sumOfVectors(const vector<uint8_t>& lNum,
     // Reserve maximum possible capacity
     sumNum.reserve(maxSize + 1);
 
+    // Sum vectors digit by digit
     for(size_t i = 0; i < maxSize; ++i)
     {
         uint8_t sum = 0;
@@ -631,6 +634,7 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
     // Reserve maximum possible capacity
     diffNum.reserve(maxSize);
 
+    // Subtract vectors digit by digit
     for(size_t i = 0; i < maxSize; ++i)
     {
         int diff = 0;
@@ -686,6 +690,7 @@ vector<uint8_t> BigNumber::prodOfVectors(const vector<uint8_t>& lNum,
     // Reserve maximum possible capacity
     prodNum.reserve(lNum.size() + rNum.size());
 
+    // Multiply vectors with column-like multiplication
     for(const auto& next : rNum)
     {
         prodNum = sumOfVectors(prodNum, prodHelperMultiply(lNum, next),
@@ -713,6 +718,7 @@ vector<uint8_t> BigNumber::prodHelperMultiply(const vector<uint8_t>& lNum,
     // Reserve maximum possible capacity
     prodVec.reserve(lNum.size() + 1);
 
+    // Multiply digit by digit
     for(const auto& next : lNum)
     {
         uint8_t prod = (next * multiplier) + carry;
@@ -740,125 +746,129 @@ vector<uint8_t> BigNumber::prodHelperMultiply(const vector<uint8_t>& lNum,
 
 vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
                                          const vector<uint8_t>& rNum,
-                                         size_t lUp,
-                                         size_t rUp,
-                                         size_t precision,
-                                         uint8_t& narrower) // TODO: RM
+                                         size_t lShift,
+                                         size_t rShift,
+                                         size_t& decPos)
 {
-    vector<uint8_t> quotNum;
-    size_t lShift = 0;
-    size_t rShift = 0;
+    vector<uint8_t> quotNum; // Result dummy
+    size_t lAddShift = 0;
 
+    // Reserve approximate possible capacity (can be significantly different)
     quotNum.reserve(lNum.size());
 
-    if(rNum.size() > lNum.size())
+    // Determine additional shift to shape correct column
+    if(rNum.size() < lNum.size())
     {
-        rShift = rNum.size() - lNum.size(); // TODO: RM
-    }
-    else
-    {
-        lShift = lNum.size() - rNum.size();
+        lAddShift = lNum.size() - rNum.size();
     }
 
-    vector<uint8_t> lNumPart(lUp);
-    vector<uint8_t> rNumPart(rUp);
+    // Parts of numbers
+    vector<uint8_t> dividend;
+    vector<uint8_t> divisor(rShift);
 
-    int64_t prealloCounter = lShift - rUp;
-    lShift = max(int64_t(0), prealloCounter);
+    lAddShift = max(int(int64_t(0)), int(lAddShift - rShift));
 
     // Insert in reversed order
-    lNumPart.insert(lNumPart.begin(), lNum.rbegin(), lNum.rend() - lShift);
-    rNumPart.insert(rNumPart.begin(), rNum.rbegin(), rNum.rend());
+    dividend.insert(dividend.begin(), lNum.rbegin(), lNum.rend() - lAddShift);
+    divisor.insert(divisor.begin(), rNum.rbegin(), rNum.rend());
 
-//    if(prealloCounter < 0)
-//    {
-//        lNumPart.resize(lNumPart.size() + abs(prealloCounter));
-//        narrower += abs(prealloCounter);
-//    }
-
-    if(lNumPart.size() < rNumPart.size())
+    // Divident's size have to be >= divisor's size
+    if(dividend.size() < divisor.size())
     {
-        narrower += rNumPart.size() - lNumPart.size();
-        lNumPart.resize(rNumPart.size());
+        decPos += divisor.size() - dividend.size();
+        dividend.resize(divisor.size());
     }
 
-    size_t i = lNumPart.size();
+    size_t i = dividend.size();
 
+    // Divide vectors with column-like division
     while(true) // FIXME: ouf
     {
-        if(quotHelperLess(lNumPart, rNumPart))
+        if(quotHelperLess(dividend, divisor))
         {
+            // Have to get additional digit to dividend
             uint8_t digit;
 
-            ++i; // FIXME: Dupe
+            ++i;
 
+            // Add zero to the answer (ignore insignificant zeroes)
             if(!quotNum.empty())
             {
                 quotNum.emplace_back(0);
             }
 
+            // Get additional digit from lNum if possible or zero
             if(i <= lNum.size())
             {
                 digit = lNum.at(lNum.size() - i);
             }
             else
             {
-                if(trackZeroes(lNumPart, 0) == lNumPart.size())
+                if(trackZeroes(dividend, 0) == dividend.size())
                 {
+                    // Division completed without remainder
                     break;
                 }
 
                 digit = 0;
-                ++narrower;
+                ++decPos;
             }
 
-            lNumPart.emplace_back(digit);
+            // Add additional digit to dividend
+            dividend.emplace_back(digit);
             continue;
         }
 
         size_t res = 0;
         size_t zeroTrack = 0;
 
-        while(!quotHelperLess(lNumPart, rNumPart)) // TODO: Post?
+        do
         {
             size_t shift = 0;
 
-            if(lNumPart.size() > rNumPart.size())
+            // Determine shift to shape correct column
+            if(dividend.size() > divisor.size())
             {
-                shift = lNumPart.size() - rNumPart.size();
+                shift = dividend.size() - divisor.size();
             }
 
-            quotHelperSubtract(lNumPart, rNumPart, shift);
+            // Subtract divisor from divident inplace
+            quotHelperSubtract(dividend, divisor, shift);
             ++res;
 
-            zeroTrack = trackZeroes(lNumPart, zeroTrack); // TODO: Rename
+            zeroTrack = trackZeroes(dividend, zeroTrack);
 
-            if(zeroTrack == lNumPart.size())
+            if(zeroTrack == dividend.size())
             {
-                // lNumPart is full of zeroes
-                lNumPart.clear();
+                // Division completed without remainder
+                dividend.clear();
                 break;
             }
         }
+        while(!quotHelperLess(dividend, divisor));
 
         ++i;
         quotNum.emplace_back(res);
 
+        // Add additional digit to dividend if possible
         if(i <= lNum.size())
         {
-            lNumPart.emplace_back(lNum.at(lNum.size() - i));
+            dividend.emplace_back(lNum.at(lNum.size() - i));
             continue;
         }
 
-        if(lNumPart.empty() || narrower >= precision + _precision + 1)
+        // Break if division completed w/o remainder or precision limit reached
+        if(dividend.empty() || decPos >= lShift + _precision + 1)
         {
             break;
         }
 
-        lNumPart.emplace_back(0);
-        ++narrower;
+        // Heading to decimal part
+        dividend.emplace_back(0);
+        ++decPos;
     }
 
+    // Restore correct order
     reverse(quotNum.begin(), quotNum.end());
 
     return quotNum;
@@ -1032,7 +1042,6 @@ Sign BigNumber::prodQuotSign(const Sign& lSign, const Sign& rSign)
     return Sign::negative;
 }
 
-// NOTE: Dupe from builder
 void BigNumber::popZeroes(vector<uint8_t>& vec)
 {
     // Remove zeroes from the back of vector
