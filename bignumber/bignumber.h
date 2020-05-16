@@ -52,7 +52,7 @@ private:
 private:
     // Number of digits after decimal separator for round() and arithmetics
     static constexpr size_t _precision = 30;
-    numVector::NumVector _numIntPart;
+    numVector::NumVector _numIntPart; // TODO: Rename
     size_t _fractPos;
     bigNumber::Sign _sign;
     bigNumber::Status _status;

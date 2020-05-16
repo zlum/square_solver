@@ -519,18 +519,14 @@ BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
         num._fractPos = rightNum._fractPos;
     }
 
+    // Number of zeroes in the begining of fractional part that can be skipped
+    size_t skipZeroes = num._fractPos;
+
     // Sum vectors. Additional digit will be written to (carry)
-    NumVector sum = sumOfVectors(leftNum._numIntPart,
-                                       rightNum._numIntPart, carry,
-                                       lShift, rShift);
+    num._numIntPart = sumOfVectors(leftNum._numIntPart, rightNum._numIntPart,
+                                   carry, lShift, rShift, skipZeroes);
 
-    // NOTE: Zero cleaner
-    size_t zeroPos = trackZeroes(sum, 0);
-    size_t driftPos = min(zeroPos, num._fractPos);
-
-    num._numIntPart.insert(num._numIntPart.begin(),
-                           sum.begin() + driftPos, sum.end());
-    num._fractPos -= driftPos;
+    num._fractPos -= num._fractPos - skipZeroes;
 
     if(carry != 0)
     {

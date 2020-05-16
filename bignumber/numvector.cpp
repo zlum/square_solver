@@ -6,10 +6,11 @@ using namespace numVector;
 using namespace std;
 
 NumVector numVector::sumOfVectors(const NumVector& lNum,
-                                        const NumVector& rNum,
-                                        Element& carry,
-                                        size_t lShift,
-                                        size_t rShift)
+                                  const NumVector& rNum,
+                                  Element& carry,
+                                  size_t lShift,
+                                  size_t rShift,
+                                  size_t& skipZeroes)
 {
     // Sum vectors. Additional digit will be written to (carry)
     NumVector sumNum;
@@ -47,7 +48,15 @@ NumVector numVector::sumOfVectors(const NumVector& lNum,
             carry = 0;
         }
 
-        sumNum.emplace_back(sum);
+        // Skip zeroes in the begining of fractional part
+        if(sum == 0 && skipZeroes > 0 && sumNum.empty())
+        {
+            --skipZeroes;
+        }
+        else
+        {
+            sumNum.emplace_back(sum);
+        }
     }
 
     return sumNum;
@@ -125,8 +134,9 @@ NumVector numVector::prodOfVectors(const NumVector& lNum,
     // Multiply vectors with column-like multiplication
     for(const auto& next : rNum)
     {
+        size_t skipZeroes = 0;
         prodNum = sumOfVectors(prodNum, prodHelperMultiply(lNum, next),
-                               carry, 0, rShift);
+                               carry, 0, rShift, skipZeroes);
 
         if(carry != 0)
         {

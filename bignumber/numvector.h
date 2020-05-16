@@ -11,10 +11,11 @@ namespace numVector
 
     // Calc sum of vectors. Additional digit will be written to (carry)
     NumVector sumOfVectors(const NumVector& lNum,
-                                             const NumVector& rNum,
-                                             Element& carry,
-                                             size_t lShift,
-                                             size_t rShift);
+                           const NumVector& rNum,
+                           Element& carry,
+                           size_t lShift,
+                           size_t rShift,
+                           size_t& skipZeroes);
 
     // Calcs difference of vectors. Additional digit will be written to (carry)
     NumVector diffOfVectors(const NumVector& lNum,
