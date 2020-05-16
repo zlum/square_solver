@@ -338,19 +338,8 @@ bool BigNumber::operator >(const BigNumber& other) const
         return false;
     }
 
-    // FIXME: Copypaste and conversion
-    if(int64_t(_numIntPart.size() - _fractPos) < int64_t(other._numIntPart.size() - other._fractPos))
-    {
-        return false;
-    }
-
-    if(int64_t(_numIntPart.size() - _fractPos) > int64_t(other._numIntPart.size() - other._fractPos))
-    {
-        return true;
-    }
-
-    return isVectorGreater(_numIntPart, _fractPos,
-                           other._numIntPart, other._fractPos);
+    return comparOfVectors(_numIntPart, _fractPos,
+                           other._numIntPart, other._fractPos, greater<>());
 }
 
 bool BigNumber::operator <(const BigNumber& other) const
@@ -373,18 +362,8 @@ bool BigNumber::operator <(const BigNumber& other) const
         return false;
     }
 
-    if(int64_t(_numIntPart.size() - _fractPos) > int64_t(other._numIntPart.size() - other._fractPos))
-    {
-        return false;
-    }
-
-    if(int64_t(_numIntPart.size() - _fractPos) < int64_t(other._numIntPart.size() - other._fractPos))
-    {
-        return true;
-    }
-
-    return isVectorLess(_numIntPart, _fractPos,
-                        other._numIntPart, other._fractPos);
+    return comparOfVectors(_numIntPart, _fractPos,
+                           other._numIntPart, other._fractPos, less<>());
 }
 
 bool BigNumber::operator ==(const BigNumber& other) const
@@ -727,65 +706,6 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
     return diffNum;
 }
 
-void BigNumber::quotHelperSubtract(vector<uint8_t>& lNum,
-                                   const vector<uint8_t>& rNum,
-                                   size_t rShift)
-{
-    // Subtract right vector from the left inplace
-    // Vactors have to be prepared in quotOfVectors() function
-    uint8_t carry = 0;
-
-    size_t i = lNum.size();
-
-    while(i > 0)
-    {
-        int diff = 0;
-        uint8_t lval = 0;
-        uint8_t rval = 0;
-
-        --i;
-
-        if(i < lNum.size())
-        {
-            lval = lNum.at(i);
-        }
-
-        if(i >= rShift && i < rNum.size() + rShift)
-        {
-            rval = rNum.at(i - rShift);
-        }
-        else
-        {
-            if(carry == 0)
-            {
-                break;
-            }
-        }
-
-        diff = lval - rval - carry;
-
-        if(diff < 0)
-        {
-            carry = 1;
-
-            if(i == 0)
-            {
-                diff = abs(diff);
-            }
-            else
-            {
-                diff += 10;
-            }
-        }
-        else
-        {
-            carry = 0;
-        }
-
-        lNum.at(i) = diff;
-    }
-}
-
 vector<uint8_t> BigNumber::prodHelperMultiply(const vector<uint8_t>& lNum,
                                               uint8_t multiplier)
 {
@@ -910,7 +830,7 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
 
     while(true) // FIXME: ouf
     {
-        if(isVectorLess(lNumPart, rNumPart))
+        if(quotHelperLess(lNumPart, rNumPart))
         {
             uint8_t digit;
 
@@ -943,7 +863,7 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
         size_t res = 0;
         size_t zeroTrack = 0;
 
-        while(!isVectorLess(lNumPart, rNumPart)) // TODO: Post?
+        while(!quotHelperLess(lNumPart, rNumPart)) // TODO: Post?
         {
             size_t shift = 0;
 
@@ -989,128 +909,159 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
     return quotNum;
 }
 
-bool BigNumber::isVectorGreater(const vector<uint8_t>& lNum,
-                                size_t lFractPos,
-                                const vector<uint8_t>& rNum,
-                                size_t rFractPos)
+bool BigNumber::quotHelperLess(const vector<uint8_t>& lNum,
+                               const vector<uint8_t>& rNum)
 {
-    // FIXME: Copypaste
-    size_t lShift = 0;
-    size_t rShift = 0;
-    size_t i = 0;
-
-    if(lNum.size() > rNum.size())
-    {
-        lShift = lNum.size() - rNum.size();
-        i = rNum.size();
-    }
-    else
-    {
-        rShift = rNum.size() - lNum.size();
-        i = lNum.size();
-    }
-
-    while(i > 0)
-    {
-        --i;
-
-        if(lNum.at(i + lShift) > rNum.at(i + rShift))
-        {
-            return true;
-        }
-
-        if(lNum.at(i + lShift) < rNum.at(i + rShift))
-        {
-            return false;
-        }
-    }
-
-    return lFractPos > rFractPos;
-}
-
-bool BigNumber::isVectorLess(const vector<uint8_t>& lNum,
-                             size_t lFractPos,
-                             const vector<uint8_t>& rNum,
-                             size_t rFractPos)
-{
-    size_t lShift = 0;
-    size_t rShift = 0;
-    size_t i = 0;
-
-    if(lNum.size() > rNum.size())
-    {
-        lShift = lNum.size() - rNum.size();
-        i = rNum.size();
-    }
-    else
-    {
-        rShift = rNum.size() - lNum.size();
-        i = lNum.size();
-    }
-
-    while(i > 0)
-    {
-        --i;
-
-        if(lNum.at(i + lShift) < rNum.at(i + rShift))
-        {
-            return true;
-        }
-
-        if(lNum.at(i + lShift) > rNum.at(i + rShift))
-        {
-            return false;
-        }
-    }
-
-    return lFractPos < rFractPos;
-}
-
-bool BigNumber::isVectorLess(const vector<uint8_t>& lNum,
-                             const vector<uint8_t>& rNum)
-{
-    size_t lShift = 0;
+    // Check if left vector number less than the right one
+    // Vactors have to be prepared in quotOfVectors() function
     size_t rShift = 0;
 
+    // If left vector are smaller than right then left vector number is less
+    // It is valid because insignificant digits not presented in RIGHT vector
     if(lNum.size() < rNum.size())
     {
         return true;
     }
 
-    uint8_t lval = 0;
     uint8_t rval = 0;
 
     if(lNum.size() > rNum.size())
     {
         rShift = lNum.size() - rNum.size();
     }
-    else
-    {
-        lShift = rNum.size() - lNum.size();
-    }
 
+    // Comare vectors digit to digit from the most significant one
     for(size_t i = 0; i < lNum.size(); ++i)
     {
-        if(i >= lShift && i < lNum.size() + lShift)
+        if(i >= rShift && i < rNum.size() + rShift)
         {
-            lval = lNum.at(i - lShift);
+            rval = rNum.at(i - rShift);
+        }
+
+        if(lNum.at(i) < rval)
+        {
+            return true;
+        }
+
+        if(lNum.at(i) > rval)
+        {
+            return false;
+        }
+    }
+
+    // Vectors are equal
+    return false;
+}
+
+void BigNumber::quotHelperSubtract(vector<uint8_t>& lNum,
+                                   const vector<uint8_t>& rNum,
+                                   size_t rShift)
+{
+    // Subtract right vector from the left inplace
+    // Vactors have to be prepared in quotOfVectors() function
+    uint8_t carry = 0;
+
+    size_t i = lNum.size();
+
+    while(i > 0)
+    {
+        int diff = 0;
+        uint8_t lval = 0;
+        uint8_t rval = 0;
+
+        --i;
+
+        if(i < lNum.size())
+        {
+            lval = lNum.at(i);
         }
 
         if(i >= rShift && i < rNum.size() + rShift)
         {
             rval = rNum.at(i - rShift);
         }
+        else
+        {
+            if(carry == 0)
+            {
+                break;
+            }
+        }
 
-        if(lval < rval)
+        diff = lval - rval - carry;
+
+        if(diff < 0)
+        {
+            carry = 1;
+
+            if(i == 0)
+            {
+                diff = abs(diff);
+            }
+            else
+            {
+                diff += 10;
+            }
+        }
+        else
+        {
+            carry = 0;
+        }
+
+        lNum.at(i) = diff;
+    }
+}
+
+bool BigNumber::comparOfVectors(const vector<uint8_t>& lNum,
+                                size_t lFractPos,
+                                const vector<uint8_t>& rNum,
+                                size_t rFractPos,
+                                const function<bool(int, int)>& functor)
+{
+    // If sizes of vector's integer part are different then numbers too
+    // It is valid because insignificant digits not presented in vector
+    if(functor(int(lNum.size() - lFractPos), int(rNum.size() - rFractPos)))
+    {
+        return true;
+    }
+
+    if(int(lNum.size() - lFractPos) != int(rNum.size() - rFractPos))
+    {
+        return false;
+    }
+
+    // Comare vectors digit to digit from the most significant one
+    size_t lShift = 0;
+    size_t rShift = 0;
+    size_t i = 0;
+
+    if(lNum.size() > rNum.size())
+    {
+        lShift = lNum.size() - rNum.size();
+        i = rNum.size();
+    }
+    else
+    {
+        rShift = rNum.size() - lNum.size();
+        i = lNum.size();
+    }
+
+    while(i > 0)
+    {
+        --i;
+
+        if(functor(lNum.at(i + lShift), rNum.at(i + rShift)))
         {
             return true;
         }
 
-        if(lval > rval)
+        if(lNum.at(i + lShift) != rNum.at(i + rShift))
         {
             return false;
         }
     }
 
-    return false;
+    // If any digits in vector are same,
+    // compare by number of digits after decimal point
+    return functor(lFractPos, rFractPos);
 }

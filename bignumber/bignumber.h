@@ -3,6 +3,7 @@
 #include "bignumbertypes.h"
 
 #include <cstdint>
+#include <functional>
 #include <iostream>
 #include <vector>
 
@@ -77,10 +78,6 @@ private:
     static size_t trackZeroes(const std::vector<uint8_t>& vec, size_t pos);
 
     // Calcs quotient of vectors
-    static void quotHelperSubtract(std::vector<uint8_t>& lNum,
-                                   const std::vector<uint8_t>& rNum,
-                                   size_t rShift);
-
     static std::vector<uint8_t> quotOfVectors(const std::vector<uint8_t>& lNum,
                                               const std::vector<uint8_t>& rNum,
                                               size_t lUp,
@@ -88,19 +85,18 @@ private:
                                               size_t precision,
                                               uint8_t& narrower);
 
-    // TODO: Merge this two isVec* and rename
-    static bool isVectorGreater(const std::vector<uint8_t>& lNum,
+    static bool quotHelperLess(const std::vector<uint8_t>& lNum,
+                               const std::vector<uint8_t>& rNum);
+
+    static void quotHelperSubtract(std::vector<uint8_t>& lNum,
+                                   const std::vector<uint8_t>& rNum,
+                                   size_t rShift);
+
+    static bool comparOfVectors(const std::vector<uint8_t>& lNum,
                                 size_t lFractPos,
                                 const std::vector<uint8_t>& rNum,
-                                size_t rFractPos);
-
-    static bool isVectorLess(const std::vector<uint8_t>& lNum,
-                             size_t lFractPos,
-                             const std::vector<uint8_t>& rNum,
-                             size_t rFractPos);
-
-    static bool isVectorLess(const std::vector<uint8_t>& lNum,
-                             const std::vector<uint8_t>& rNum);
+                                size_t rFractPos,
+                                const std::function<bool(int, int)>& functor);
 
 private:
     // Number of digits after decimal separator for round() and arithmetics
