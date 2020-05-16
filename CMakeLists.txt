@@ -14,6 +14,8 @@ endif()
 
 set(CMAKE_CXX_STANDARD 14)
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 set(BIGNUMBER
     bignumber/bignumber.cpp
     bignumber/bignumber.h
@@ -22,19 +24,27 @@ set(BIGNUMBER
     bignumber/bignumbertypes.h
 )
 
+set(PRODUCERCONSUMER
+    producerconsumer/buffer.hpp
+    producerconsumer/producerconsumer.cpp
+    producerconsumer/producerconsumer.h
+)
+
+set(QUADEQUATION
+    quadequation/quadprinter.cpp
+    quadequation/quadprinter.h
+    quadequation/quadreader.cpp
+    quadequation/quadreader.h
+    quadequation/quadsolver.cpp
+    quadequation/quadsolver.h
+    quadequation/task.h
+)
+
 set(SRC
     ${BIGNUMBER}
-    buffer.hpp
+    ${PRODUCERCONSUMER}
+    ${QUADEQUATION}
     main.cpp
-    producerconsumer.cpp
-    producerconsumer.h
-    quadprinter.cpp
-    quadprinter.h
-    quadreader.cpp
-    quadreader.h
-    quadsolver.cpp
-    quadsolver.h
-    task.h
 )
 
 add_executable(${PROJECT_NAME}

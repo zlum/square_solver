@@ -1,7 +1,8 @@
-#include "buffer.hpp"
-#include "quadprinter.h"
-#include "quadreader.h"
-#include "quadsolver.h"
+#include "bignumber/bignumberbuilder.h"
+#include "producerconsumer/buffer.hpp"
+#include "quadequation/quadprinter.h"
+#include "quadequation/quadreader.h"
+#include "quadequation/quadsolver.h"
 
 #include <iostream>
 #include <memory>
@@ -36,9 +37,12 @@ int main(int argc, char* argv[])
     auto bufCoeffs = make_shared<Buffer<QuadCoeffs>>();
     auto bufEquation = make_shared<Buffer<QuadEquation>>();
 
+    //
+    auto builderCoeff = make_unique<BigNumberBuilder>();
+
     // Create ProducerConsumer instances to read, solve and print
     // quadratic equations
-    QuadReader reader(argc, argv, bufCoeffs);
+    QuadReader reader(argc, argv, bufCoeffs, move(builderCoeff));
     QuadSolver solver(bufCoeffs, bufEquation);
     QuadPrinter printer(bufEquation);
 
