@@ -48,25 +48,20 @@ private:
     // Subtract two BigNumbers
     static BigNumber diff(const BigNumber& leftNum, const BigNumber& rightNum);
 
-    // Determine sign of a product or quotient
-    static bigNumber::Sign prodQuotSign(const bigNumber::Sign& lSign,
-                                        const bigNumber::Sign& rSign);
-
-    // Removes nonsignificant digit
-    static void popZeroes(std::vector<uint8_t>& vec);
-
     // Calc sum of vectors. Additional digit will be written to (carry)
     static std::vector<uint8_t> sumOfVectors(const std::vector<uint8_t>& lNum,
                                              const std::vector<uint8_t>& rNum,
                                              uint8_t& carry,
                                              size_t lShift,
                                              size_t rShift);
+
     // Calcs difference of vectors. Additional digit will be written to (carry)
     static std::vector<uint8_t> diffOfVectors(const std::vector<uint8_t>& lNum,
                                               const std::vector<uint8_t>& rNum,
                                               uint8_t& carry,
                                               size_t lShift,
                                               size_t rShift);
+
     // Calcs product of vectors. Additional digit will be written to (carry)
     static std::vector<uint8_t> prodOfVectors(const std::vector<uint8_t>& lNum,
                                               const std::vector<uint8_t>& rNum,
@@ -97,7 +92,13 @@ private:
                                  size_t rFractPos,
                                  const std::function<bool(int, int)>& functor);
 
+    // Determine sign of a product or quotient
+    static bigNumber::Sign prodQuotSign(const bigNumber::Sign& lSign,
+                                        const bigNumber::Sign& rSign);
 
+    // Removes nonsignificant digit
+    static void popZeroes(std::vector<uint8_t>& vec);
+    // Find first non-zero digit from the end of number to begin
     static size_t trackZeroes(const std::vector<uint8_t>& vec, size_t pos);
 
 private:

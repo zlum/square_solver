@@ -571,32 +571,6 @@ BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
     return num;
 }
 
-Sign BigNumber::prodQuotSign(const Sign& lSign, const Sign& rSign)
-{
-    // Determine sign of a product or quotient
-    if(lSign == rSign)
-    {
-        return Sign::positive;
-    }
-
-    return Sign::negative;
-}
-
-// NOTE: Dupe from builder
-void BigNumber::popZeroes(vector<uint8_t>& vec)
-{
-    // Remove zeroes from the back of vector
-    while(!vec.empty())
-    {
-        if(vec.back() != 0)
-        {
-            break;
-        }
-
-        vec.pop_back();
-    }
-}
-
 vector<uint8_t> BigNumber::sumOfVectors(const vector<uint8_t>& lNum,
                                         const vector<uint8_t>& rNum,
                                         uint8_t& carry,
@@ -1045,6 +1019,32 @@ bool BigNumber::compareOfVectors(const vector<uint8_t>& lNum,
     // If any digits in vector are same,
     // compare by number of digits after decimal point
     return functor(lFractPos, rFractPos);
+}
+
+Sign BigNumber::prodQuotSign(const Sign& lSign, const Sign& rSign)
+{
+    // Determine sign of a product or quotient
+    if(lSign == rSign)
+    {
+        return Sign::positive;
+    }
+
+    return Sign::negative;
+}
+
+// NOTE: Dupe from builder
+void BigNumber::popZeroes(vector<uint8_t>& vec)
+{
+    // Remove zeroes from the back of vector
+    while(!vec.empty())
+    {
+        if(vec.back() != 0)
+        {
+            break;
+        }
+
+        vec.pop_back();
+    }
 }
 
 size_t BigNumber::trackZeroes(const vector<uint8_t>& vec, size_t pos)
