@@ -37,7 +37,7 @@ set(QUADEQUATION
     quadequation/quadreader.h
     quadequation/quadsolver.cpp
     quadequation/quadsolver.h
-    quadequation/task.h
+    quadequation/quadtypes.h
 )
 
 set(SRC

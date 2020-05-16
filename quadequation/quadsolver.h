@@ -3,7 +3,7 @@
 #include "producerconsumer/producerconsumer.h"
 
 #include "producerconsumer/buffer.hpp"
-#include "task.h"
+#include "quadtypes.h"
 
 #include <memory>
 #include <utility>

@@ -20,16 +20,6 @@ set(BIGNUMBER_TEST
 
 set(SRC_TEST
     ${BIGNUMBER_TEST}
-    ../buffer.hpp
-    ../producerconsumer.cpp
-    ../producerconsumer.h
-    ../quadprinter.cpp
-    ../quadprinter.h
-    ../quadreader.cpp
-    ../quadreader.h
-    ../quadsolver.cpp
-    ../quadsolver.h
-    ../task.h
 )
 
 set(SRC

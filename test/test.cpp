@@ -2,10 +2,6 @@
 
 #include "bignumber/bignumber.h"
 #include "bignumber/bignumberbuilder.h"
-#include "buffer.hpp"
-#include "quadprinter.h"
-#include "quadreader.h"
-#include "quadsolver.h"
 
 using namespace std;
 using namespace bigNumber;
