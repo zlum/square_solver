@@ -242,6 +242,9 @@ TEST(Zero, BigNumber)
     bnb.appendStr("000000000000000000.000000000000000000000000000000000");
     BigNumber test4{bnb.build()};
 
+    bnb.appendStr("-0");
+    BigNumber test5{bnb.build()};
+
     EXPECT_TRUE(test1.isZero());
     EXPECT_TRUE(test2.isZero());
     EXPECT_TRUE(test3.isZero());
@@ -249,6 +252,11 @@ TEST(Zero, BigNumber)
     EXPECT_EQ(test1, test2);
     EXPECT_EQ(test2, test3);
     EXPECT_EQ(test3, test4);
+    EXPECT_EQ(test4, test5);
+    EXPECT_FALSE(test4 > test5);
+    EXPECT_FALSE(test4 < test5);
+    EXPECT_FALSE(test5 > test4);
+    EXPECT_FALSE(test5 < test4);
 }
 
 TEST(NegativeSum, BigNumber)

@@ -320,6 +320,11 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
 
 bool BigNumber::operator >(const BigNumber& other) const
 {
+    if(isZero() && other.isZero())
+    {
+        return false;
+    }
+
     if(_sign == Sign::positive && other._sign == Sign::negative)
     {
         return true;
@@ -347,6 +352,11 @@ bool BigNumber::operator >(const BigNumber& other) const
 
 bool BigNumber::operator <(const BigNumber& other) const
 {
+    if(isZero() && other.isZero())
+    {
+        return false;
+    }
+
     if(_sign == Sign::negative && other._sign == Sign::positive)
     {
         return true;
