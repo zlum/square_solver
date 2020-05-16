@@ -166,7 +166,7 @@ BigNumber BigNumber::operator +(const BigNumber& other) const
     }
 
     // Sign managment and selecting of proper function
-    // diff() has to be called with correct number signs
+    // diff() has to be called with correct signs of numbers
     // sum() ignores number signs
 
     // -a + -b == -(a + b)
@@ -247,17 +247,17 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
     num._sign = prodQuotSign(_sign, other._sign); // Determine sign
     num._fractPos = _fractPos + other._fractPos; // Determine decimal position
 
-    // NOTE: Zero cleaner
-//    vector<uint8_t> prod = prodOfVectors(_numIntPart, other._numIntPart, carry);
-
-//    size_t zeroPos = trackZeroes(prod, 0);
-//    size_t driftPos = min(zeroPos, size_t(0));
-
-//    num._numIntPart.insert(num._numIntPart.begin(), prod.begin() + driftPos, prod.end());
-//    num._fractPos -= driftPos;
-
     // Multiply vectors. Additional digit will be written to (carry)
-    num._numIntPart = prodOfVectors(_numIntPart, other._numIntPart, carry);
+    vector<uint8_t> prod = prodOfVectors(_numIntPart, other._numIntPart, carry);
+
+    // NOTE: Zero cleaner
+    size_t zeroPos = trackZeroes(prod, 0);
+    size_t driftPos = min(zeroPos, num._fractPos);
+
+    num._numIntPart.insert(num._numIntPart.begin(), prod.begin() + driftPos, prod.end());
+    num._fractPos -= driftPos;
+
+//    num._numIntPart = prodOfVectors(_numIntPart, other._numIntPart, carry);
 
     if(carry != 0)
     {
@@ -320,16 +320,19 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
 
 bool BigNumber::operator >(const BigNumber& other) const
 {
+    // Zeroes are equal irrespective of sign
     if(isZero() && other.isZero())
     {
         return false;
     }
 
+    // Positive numbers are greater than negative
     if(_sign == Sign::positive && other._sign == Sign::negative)
     {
         return true;
     }
 
+    // Inf and NaN with same sign are not less nor greater
     if(_status != Status::normal)
     {
         return false;
@@ -352,16 +355,19 @@ bool BigNumber::operator >(const BigNumber& other) const
 
 bool BigNumber::operator <(const BigNumber& other) const
 {
+    // Zeroes are equal irrespective of sign
     if(isZero() && other.isZero())
     {
         return false;
     }
 
+    // Negative numbers are less than positive
     if(_sign == Sign::negative && other._sign == Sign::positive)
     {
         return true;
     }
 
+    // Inf and NaN with same sign are not less nor greater
     if(_status != Status::normal)
     {
         return false;
@@ -377,34 +383,45 @@ bool BigNumber::operator <(const BigNumber& other) const
         return true;
     }
 
-    return isVectorLesser(_numIntPart, _fractPos,
-                          other._numIntPart, other._fractPos);
+    return isVectorLess(_numIntPart, _fractPos,
+                        other._numIntPart, other._fractPos);
 }
 
 bool BigNumber::operator ==(const BigNumber& other) const
 {
-    if(_sign != other._sign && !isZero())
+    // Zeroes are equal irrespective of sign
+    if(isZero() && other.isZero())
+    {
+        return true;
+    }
+
+    // Non-zero numbers with different signs are different
+    if(_sign != other._sign)
     {
         return false;
     }
 
+    // Same sign Inf are equal
     if(_status == Status::inf)
     {
         return true;
     }
 
+    // Same sign NaN are different
     if(_status == Status::nan)
     {
         return false;
     }
 
-    // TODO: Check
+    // If sizes or decimal point positions different then numbers are different
+    // It is valid because insignificant digits not presented in vector
     if(_fractPos != other._fractPos ||
        _numIntPart.size() != other._numIntPart.size())
     {
         return false;
     }
 
+    // Comparison of digits from the most significant to the least
     size_t i = _numIntPart.size();
 
     while(i > 0)
@@ -429,7 +446,6 @@ ostream& operator <<(ostream& os, const BigNumber& num)
 {
     // Output number in decimal format (ex. -123.456789)
     // Output 0, (-)Inf, (-)NaN in special cases
-
     if(num.isZero())
     {
         os << '0';
@@ -499,11 +515,13 @@ ostream& operator <<(ostream& os, const BigNumber& num)
 
 BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
 {
+    // Sum two BigNumbers irrespective of sign or status
     BigNumber num;
-    uint8_t extender = 0;
-    uint32_t lShift = 0;
-    uint32_t rShift = 0;
+    uint8_t carry = 0;
+    size_t lShift = 0;
+    size_t rShift = 0;
 
+    // Determine shift to shape correct column
     if(leftNum._fractPos > rightNum._fractPos)
     {
         rShift = leftNum._fractPos - rightNum._fractPos;
@@ -515,19 +533,21 @@ BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
         num._fractPos = rightNum._fractPos;
     }
 
+    // Sum vectors. Additional digit will be written to (carry)
     vector<uint8_t> sum = sumOfVectors(leftNum._numIntPart,
-                                       rightNum._numIntPart, extender,
+                                       rightNum._numIntPart, carry,
                                        lShift, rShift);
 
+    // NOTE: Zero cleaner
     size_t zeroPos = trackZeroes(sum, 0);
     size_t driftPos = min(zeroPos, num._fractPos);
 
     num._numIntPart.insert(num._numIntPart.begin(), sum.begin() + driftPos, sum.end());
-    num._fractPos -= driftPos; // TODO: Check
+    num._fractPos -= driftPos;
 
-    if(extender != 0)
+    if(carry != 0)
     {
-        num._numIntPart.emplace_back(extender);
+        num._numIntPart.emplace_back(carry);
     }
 
     return num;
@@ -537,9 +557,10 @@ BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
 {
     BigNumber num;
     uint8_t narrower = 0;
-    uint32_t lShift = 0;
-    uint32_t rShift = 0;
+    size_t lShift = 0;
+    size_t rShift = 0;
 
+    // Determine shift to shape correct column
     if(leftNum._fractPos > rightNum._fractPos)
     {
         rShift = leftNum._fractPos - rightNum._fractPos;
@@ -551,6 +572,8 @@ BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
         num._fractPos = rightNum._fractPos;
     }
 
+    // Lesser vector must been subtracted from the greater one
+    // Swap them and change result sign if necessary
     if(leftNum < rightNum)
     {
         num._numIntPart = diffOfVectors(rightNum._numIntPart,
@@ -570,6 +593,7 @@ BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
 
 Sign BigNumber::prodQuotSign(const Sign& lSign, const Sign& rSign)
 {
+    // Determine sign of a product or quotient
     if(lSign == rSign)
     {
         return Sign::positive;
@@ -586,6 +610,7 @@ void BigNumber::setSign(Sign sign)
 // NOTE: Dupe from builder
 void BigNumber::popZeroes(vector<uint8_t>& vec)
 {
+    // Remove zeroes from the back of vector
     while(!vec.empty())
     {
         if(vec.back() != 0)
@@ -599,14 +624,16 @@ void BigNumber::popZeroes(vector<uint8_t>& vec)
 
 vector<uint8_t> BigNumber::sumOfVectors(const vector<uint8_t>& lNum,
                                         const vector<uint8_t>& rNum,
-                                        uint8_t& extender,
-                                        uint32_t lShift, // TODO: size_t?
-                                        uint32_t rShift)
+                                        uint8_t& carry,
+                                        size_t lShift,
+                                        size_t rShift)
 {
-    size_t maxSize = max(lNum.size() + lShift, rNum.size() + rShift);
+    // Sum vectors. Additional digit will be written to (carry)
     vector<uint8_t> sumNum;
-    sumNum.reserve(maxSize);
-    size_t drift = 0;
+    size_t maxSize = max(lNum.size() + lShift, rNum.size() + rShift);
+
+    // Reserve maximum possible capacity
+    sumNum.reserve(maxSize + 1);
 
     for(size_t i = 0; i < maxSize; ++i)
     {
@@ -624,16 +651,16 @@ vector<uint8_t> BigNumber::sumOfVectors(const vector<uint8_t>& lNum,
             rval = rNum.at(i - rShift);
         }
 
-        sum = lval + rval + extender;
+        sum = lval + rval + carry;
 
         if(sum > 9)
         {
-            extender = 1;
+            carry = 1;
             sum -= 10;
         }
         else
         {
-            extender = 0;
+            carry = 0;
         }
 
         sumNum.emplace_back(sum);
@@ -644,18 +671,20 @@ vector<uint8_t> BigNumber::sumOfVectors(const vector<uint8_t>& lNum,
 
 vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
                                          const vector<uint8_t>& rNum,
-                                         uint8_t& narrower, // TODO: RM
-                                         uint32_t lShift,
-                                         uint32_t rShift)
+                                         uint8_t& carry,
+                                         size_t lShift,
+                                         size_t rShift)
 {
+    // Subtract vectors. Additional digit will be written to (carry)
+    vector<uint8_t> diffNum; // Result dummy
     size_t maxSize = max(lNum.size() + lShift, rNum.size() + rShift);
-    vector<uint8_t> diffNum; // (maxSize);
 
+    // Reserve maximum possible capacity
     diffNum.reserve(maxSize);
 
     for(size_t i = 0; i < maxSize; ++i)
     {
-        int8_t diff = 0;
+        int diff = 0;
         uint8_t lval = 0;
         uint8_t rval = 0;
 
@@ -669,11 +698,11 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
             rval = rNum.at(i - rShift);
         }
 
-        diff = lval - rval - narrower;
+        diff = lval - rval - carry;
 
         if(diff < 0)
         {
-            narrower = 1;
+            carry = 1;
 
             if(i == maxSize - 1)
             {
@@ -686,27 +715,31 @@ vector<uint8_t> BigNumber::diffOfVectors(const vector<uint8_t>& lNum,
         }
         else
         {
-            narrower = 0;
+            carry = 0;
         }
 
         diffNum.emplace_back(diff);
     }
 
+    // Remove zeroes from the back of vector
     popZeroes(diffNum);
 
     return diffNum;
 }
 
-void BigNumber::quotHelper(vector<uint8_t>& lNum, const vector<uint8_t>& rNum,
-                           uint32_t rShift)
+void BigNumber::quotHelperSubtract(vector<uint8_t>& lNum,
+                                   const vector<uint8_t>& rNum,
+                                   size_t rShift)
 {
-    uint8_t narrower = 0;
+    // Subtract right vector from the left inplace
+    // Vactors have to be prepared in quotOfVectors() function
+    uint8_t carry = 0;
 
     size_t i = lNum.size();
 
     while(i > 0)
     {
-        int8_t diff = 0;
+        int diff = 0;
         uint8_t lval = 0;
         uint8_t rval = 0;
 
@@ -723,17 +756,17 @@ void BigNumber::quotHelper(vector<uint8_t>& lNum, const vector<uint8_t>& rNum,
         }
         else
         {
-            if(narrower == 0)
+            if(carry == 0)
             {
                 break;
             }
         }
 
-        diff = lval - rval - narrower;
+        diff = lval - rval - carry;
 
         if(diff < 0)
         {
-            narrower = 1;
+            carry = 1;
 
             if(i == 0)
             {
@@ -746,41 +779,43 @@ void BigNumber::quotHelper(vector<uint8_t>& lNum, const vector<uint8_t>& rNum,
         }
         else
         {
-            narrower = 0;
+            carry = 0;
         }
 
         lNum.at(i) = diff;
     }
 }
 
-vector<uint8_t> BigNumber::prodHelper(const vector<uint8_t>& lNum,
-                                      uint8_t multiplier)
+vector<uint8_t> BigNumber::prodHelperMultiply(const vector<uint8_t>& lNum,
+                                              uint8_t multiplier)
 {
-    uint8_t extender = 0;
-    vector<uint8_t> prodVec;
+    // Multiply vector by (multiplier)
+    vector<uint8_t> prodVec; // Result dummy
+    uint8_t carry = 0;
 
+    // Reserve maximum possible capacity
     prodVec.reserve(lNum.size() + 1);
 
     for(const auto& next : lNum)
     {
-        uint8_t prod = (next * multiplier) + extender;
+        uint8_t prod = (next * multiplier) + carry;
 
         if(prod > 9)
         {
-            extender = prod / 10;
-            prod -= extender * 10;
+            carry = prod / 10;
+            prod -= carry * 10;
         }
         else
         {
-            extender = 0;
+            carry = 0;
         }
 
         prodVec.emplace_back(prod);
     }
 
-    if(extender != 0)
+    if(carry != 0)
     {
-        prodVec.emplace_back(extender);
+        prodVec.emplace_back(carry);
     }
 
     return prodVec;
@@ -788,25 +823,26 @@ vector<uint8_t> BigNumber::prodHelper(const vector<uint8_t>& lNum,
 
 vector<uint8_t> BigNumber::prodOfVectors(const vector<uint8_t>& lNum,
                                          const vector<uint8_t>& rNum,
-                                         uint8_t& extender)
+                                         uint8_t& carry)
 {
-    vector<uint8_t> prodNum;
-    uint32_t shift = 0; // TODO: Rename
+    vector<uint8_t> prodNum; // Result dummy
+    size_t rShift = 0; // Shift of right number in sum to shape correct column
 
+    // Reserve maximum possible capacity
     prodNum.reserve(lNum.size() + rNum.size());
 
     for(const auto& next : rNum)
     {
-        prodNum = sumOfVectors(prodNum, prodHelper(lNum, next),
-                               extender, 0, shift);
+        prodNum = sumOfVectors(prodNum, prodHelperMultiply(lNum, next),
+                               carry, 0, rShift);
 
-        if(extender != 0)
+        if(carry != 0)
         {
-            prodNum.emplace_back(extender);
-            extender = 0;
+            prodNum.emplace_back(carry);
+            carry = 0;
         }
 
-        ++shift;
+        ++rShift;
     }
 
     return prodNum;
@@ -874,7 +910,7 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
 
     while(true) // FIXME: ouf
     {
-        if(isVectorLesser(lNumPart, rNumPart))
+        if(isVectorLess(lNumPart, rNumPart))
         {
             uint8_t digit;
 
@@ -907,7 +943,7 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
         size_t res = 0;
         size_t zeroTrack = 0;
 
-        while(!isVectorLesser(lNumPart, rNumPart)) // TODO: Post?
+        while(!isVectorLess(lNumPart, rNumPart)) // TODO: Post?
         {
             size_t shift = 0;
 
@@ -917,7 +953,7 @@ vector<uint8_t> BigNumber::quotOfVectors(const vector<uint8_t>& lNum,
             }
 
             // TODO: Fix shift types
-            quotHelper(lNumPart, rNumPart, shift);
+            quotHelperSubtract(lNumPart, rNumPart, shift);
             ++res;
 
             zeroTrack = trackZeroes(lNumPart, zeroTrack); // TODO: Rename
@@ -992,10 +1028,10 @@ bool BigNumber::isVectorGreater(const vector<uint8_t>& lNum,
     return lFractPos > rFractPos;
 }
 
-bool BigNumber::isVectorLesser(const vector<uint8_t>& lNum,
-                               size_t lFractPos,
-                               const vector<uint8_t>& rNum,
-                               size_t rFractPos)
+bool BigNumber::isVectorLess(const vector<uint8_t>& lNum,
+                             size_t lFractPos,
+                             const vector<uint8_t>& rNum,
+                             size_t rFractPos)
 {
     size_t lShift = 0;
     size_t rShift = 0;
@@ -1030,8 +1066,8 @@ bool BigNumber::isVectorLesser(const vector<uint8_t>& lNum,
     return lFractPos < rFractPos;
 }
 
-bool BigNumber::isVectorLesser(const vector<uint8_t>& lNum,
-                               const vector<uint8_t>& rNum)
+bool BigNumber::isVectorLess(const vector<uint8_t>& lNum,
+                             const vector<uint8_t>& rNum)
 {
     size_t lShift = 0;
     size_t rShift = 0;

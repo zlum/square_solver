@@ -42,6 +42,7 @@ public:
     friend std::ostream& operator <<(std::ostream& os, const BigNumber& num);
 
 private:
+    // Sum two BigNumbers irrespective of sign or status
     static BigNumber sum(const BigNumber& leftNum, const BigNumber& rightNum);
     static BigNumber diff(const BigNumber& leftNum, const BigNumber& rightNum);
 
@@ -53,32 +54,32 @@ private:
     // Removes nonsignificant digit
     static void popZeroes(std::vector<uint8_t>& vec);
 
-    // Calcs sum of vectors
+    // Calc sum of vectors. Additional digit will be written to (carry)
     static std::vector<uint8_t> sumOfVectors(const std::vector<uint8_t>& lNum,
                                              const std::vector<uint8_t>& rNum,
-                                             uint8_t& extender,
-                                             uint32_t lShift,
-                                             uint32_t rShift);
+                                             uint8_t& carry,
+                                             size_t lShift,
+                                             size_t rShift);
     // Calcs difference of vectors
     static std::vector<uint8_t> diffOfVectors(const std::vector<uint8_t>& lNum,
                                               const std::vector<uint8_t>& rNum,
-                                              uint8_t& narrower,
-                                              uint32_t lShift,
-                                              uint32_t rShift);
+                                              uint8_t& carry,
+                                              size_t lShift,
+                                              size_t rShift);
     // Calcs product of vectors
-    static std::vector<uint8_t> prodHelper(const std::vector<uint8_t>& lNum,
-                                           uint8_t multiplier);
+    static std::vector<uint8_t> prodHelperMultiply(const std::vector<uint8_t>& lNum,
+                                                   uint8_t multiplier);
 
     static std::vector<uint8_t> prodOfVectors(const std::vector<uint8_t>& lNum,
                                               const std::vector<uint8_t>& rNum,
-                                              uint8_t& extender);
+                                              uint8_t& carry);
 
     static size_t trackZeroes(const std::vector<uint8_t>& vec, size_t pos);
 
     // Calcs quotient of vectors
-    static void quotHelper(std::vector<uint8_t>& lNum,
-                           const std::vector<uint8_t>& rNum,
-                           uint32_t rShift);
+    static void quotHelperSubtract(std::vector<uint8_t>& lNum,
+                                   const std::vector<uint8_t>& rNum,
+                                   size_t rShift);
 
     static std::vector<uint8_t> quotOfVectors(const std::vector<uint8_t>& lNum,
                                               const std::vector<uint8_t>& rNum,
@@ -93,13 +94,13 @@ private:
                                 const std::vector<uint8_t>& rNum,
                                 size_t rFractPos);
 
-    static bool isVectorLesser(const std::vector<uint8_t>& lNum,
-                               size_t lFractPos,
-                               const std::vector<uint8_t>& rNum,
-                               size_t rFractPos);
+    static bool isVectorLess(const std::vector<uint8_t>& lNum,
+                             size_t lFractPos,
+                             const std::vector<uint8_t>& rNum,
+                             size_t rFractPos);
 
-    static bool isVectorLesser(const std::vector<uint8_t>& lNum,
-                               const std::vector<uint8_t>& rNum);
+    static bool isVectorLess(const std::vector<uint8_t>& lNum,
+                             const std::vector<uint8_t>& rNum);
 
 private:
     // Number of digits after decimal separator for round() and arithmetics

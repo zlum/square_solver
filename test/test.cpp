@@ -427,6 +427,24 @@ TEST(Equal, BigNumber)
     BigNumber testPosZero{{}, 0, Sign::positive, Status::normal};
     BigNumber testNegZero{{}, 0, Sign::negative, Status::normal};
 
+    bnb.appendStr("0");
+    BigNumber testZero{bnb.build()};
+
+    bnb.appendStr("000000");
+    BigNumber testZeroes{bnb.build()};
+
+    bnb.appendStr(".0");
+    BigNumber testDotZero{bnb.build()};
+
+    bnb.appendStr("00000000.0");
+    BigNumber testZeroesDot{bnb.build()};
+
+    bnb.appendStr("0.000000000000000000");
+    BigNumber testDotZeroes{bnb.build()};
+
+    bnb.appendStr("000.00000000000");
+    BigNumber testZeroesDotZeroes{bnb.build()};
+
     EXPECT_EQ(testPosInf, testPosInf);
     EXPECT_NE(testPosInf, testNegInf);
     EXPECT_NE(testPosNaN, testPosNaN);
@@ -435,6 +453,36 @@ TEST(Equal, BigNumber)
     EXPECT_EQ(testPosZero, testPosZero);
     EXPECT_EQ(testPosZero, testNegZero);
     EXPECT_EQ(testNegZero, testNegZero);
+
+    EXPECT_EQ(testNegZero, testZero);
+    EXPECT_EQ(testZero, testZeroes);
+    EXPECT_EQ(testZeroes, testDotZero);
+    EXPECT_EQ(testDotZero, testZeroesDot);
+    EXPECT_EQ(testZeroesDot, testDotZeroes);
+    EXPECT_EQ(testDotZeroes, testZeroesDotZeroes);
+    EXPECT_EQ(testZeroesDotZeroes, testZeroesDotZeroes);
+}
+
+TEST(DecimalComparison, BigNumber)
+{
+    BigNumberBuilder bnb;
+
+    bnb.appendStr("100");
+    BigNumber testHundred{bnb.build()};
+
+    bnb.appendStr("0.01");
+    BigNumber testSmall{bnb.build()};
+
+    bnb.appendStr("0.0001");
+    BigNumber testSmaller{bnb.build()};
+
+    BigNumber testProd = testHundred * testSmaller;
+
+    EXPECT_EQ(testProd, testSmall);
+    EXPECT_FALSE(testProd < testSmall);
+    EXPECT_FALSE(testProd > testSmall);
+    EXPECT_FALSE(testSmall < testProd);
+    EXPECT_FALSE(testSmall > testProd);
 }
 
 TEST(SumSign, BigNumber)
@@ -558,7 +606,7 @@ TEST(SqrtGrow, BigNumber)
     bnb.appendStr("2");
     BigNumber test2{bnb.build()};
 
-    for(int i = 0; i < 32; ++i)
+    for(int i = 0; i < 4; ++i)
     {
         test1 = test1 * Big4;
         test2 = test2 * Big2;
