@@ -44,7 +44,7 @@ namespace numVector
                           const std::function<bool(int, int)>& functor);
 
     // Remove nonsignificant digits
-    void popZeroes(NumVector& vec);
+    size_t popZeroes(NumVector& vec, size_t maxPop);
     // Find first non-zero digit from the end of number to begin
     size_t trackZeroes(const NumVector& vec, size_t pos);
 } // namespace numVector

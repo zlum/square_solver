@@ -110,7 +110,7 @@ NumVector numVector::diffOfVectors(const NumVector& lNum, const NumVector& rNum,
     }
 
     // Remove zeroes from the back of vector
-    popZeroes(diffNum);
+    popZeroes(diffNum, diffNum.size());
 
     return diffNum;
 }
@@ -476,10 +476,12 @@ bool numVector::compareOfVectors(const NumVector& lNum, size_t lFractPos,
     return functor(lFractPos, rFractPos);
 }
 
-void numVector::popZeroes(NumVector& vec)
+size_t numVector::popZeroes(NumVector& vec, size_t maxPop)
 {
-    // Remove zeroes from the back of vector
-    while(!vec.empty())
+    // Remove zeroes from the back of vector until non-zero value or pop limit
+    size_t i = 0;
+
+    while(!vec.empty() && i < maxPop)
     {
         if(vec.back() != 0)
         {
@@ -487,7 +489,10 @@ void numVector::popZeroes(NumVector& vec)
         }
 
         vec.pop_back();
+        ++i;
     }
+
+    return i;
 }
 
 size_t numVector::trackZeroes(const NumVector& vec, size_t pos)

@@ -7,12 +7,11 @@
 #include <locale>
 #include <stdexcept>
 
-using namespace std;
 using namespace bigNumber;
+using namespace numVector;
+using namespace std;
 
 BigNumberBuilder::BigNumberBuilder():
-    _fractPos(0),
-    _sign(Sign::positive),
     _decimalPointFlag(false),
     _empty(true)
 {
@@ -24,7 +23,7 @@ bool BigNumberBuilder::appendChar(char symbol)
 
     // Zero as first digit in integral part of number allowed but useless
     // Zero will be silently ignored
-    if(_numIntPart.empty() && symbol == '0' && !_decimalPointFlag)
+    if(_dummyNum._number.empty() && symbol == '0' && !_decimalPointFlag)
     {
         _empty = false;
 
@@ -34,17 +33,17 @@ bool BigNumberBuilder::appendChar(char symbol)
     if(bool(isdigit(symbol)))
     {
         // TODO: Max size constexpr
-        if(_numIntPart.size() >= SIZE_MAX - 1)
+        if(_dummyNum._number.size() >= SIZE_MAX - 1)
         {
             // FIXME: Throw my type
             throw out_of_range("Number out of range");
         }
 
-        _numIntPart.emplace_back(symbol - '0');
+        _dummyNum._number.emplace_back(symbol - '0');
 
         if(_decimalPointFlag)
         {
-            ++_fractPos;
+            ++_dummyNum._fractPos;
         }
 
         _empty = false;
@@ -55,9 +54,9 @@ bool BigNumberBuilder::appendChar(char symbol)
     if(symbol == '-')
     {
         // Sign can be set only in the first position
-        if(_numIntPart.empty() && !_decimalPointFlag)
+        if(_dummyNum._number.empty() && !_decimalPointFlag)
         {
-            _sign = Sign::negative;
+            _dummyNum._sign = Sign::negative;
 
             return true;
         }
@@ -101,36 +100,20 @@ size_t BigNumberBuilder::appendStr(const string& str, size_t pos)
 
 BigNumber BigNumberBuilder::build()
 {
-    size_t i = 0;
+    // Remove insignificant zeroes from the end of number
+    // and adjust decimal point position
+    _dummyNum._fractPos -= popZeroes(_dummyNum._number, _dummyNum._fractPos);
 
-    while(!_numIntPart.empty() && i < _fractPos)
-    {
-        if(_numIntPart.back() != 0)
-        {
-            break;
-        }
+    // Reverse number to little-endian order used by BigNumber
+    reverse(_dummyNum._number.begin(), _dummyNum._number.end());
 
-        _numIntPart.pop_back();
-        --_fractPos;
-    }
+    // Remove insignificant zeroes from another end of number
+    popZeroes(_dummyNum._number, _dummyNum._number.size());
 
-    reverse(_numIntPart.begin(), _numIntPart.end());
+    // Copy result to return
+    BigNumber num = _dummyNum;
 
-    // NOTE: Fixed in append()
-    // TODO: Use BigNumber::pop
-    while(!_numIntPart.empty())
-    {
-        if(_numIntPart.back() != 0)
-        {
-            break;
-        }
-
-        _numIntPart.pop_back();
-//        --_fractPos;
-    }
-
-    BigNumber num{_numIntPart, _fractPos, _sign, Status::normal};
-
+    // Reset own data to default
     clear();
 
     return num;
@@ -138,10 +121,12 @@ BigNumber BigNumberBuilder::build()
 
 void BigNumberBuilder::clear()
 {
-    _numIntPart.clear();
-    _fractPos = 0;
+    // Reset own data to default
+    _dummyNum._number.clear();
+    _dummyNum._fractPos = 0;
+    _dummyNum._sign = Sign::positive;
+    _dummyNum._status = Status::normal;
     _decimalPointFlag = false;
-    _sign = Sign::positive;
     _empty = true;
 }
 

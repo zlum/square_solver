@@ -3,7 +3,6 @@
 #include "bignumber.h"
 #include "bignumbertypes.h"
 
-#include <cstdint>
 #include <string>
 
 class BigNumberBuilder
@@ -24,9 +23,7 @@ public:
     bool isEmpty() const;
 
 private:
-    std::vector<uint8_t> _numIntPart;
-    size_t _fractPos;
-    bigNumber::Sign _sign;
+    BigNumber _dummyNum;
     bool _decimalPointFlag;
     bool _empty;
 };

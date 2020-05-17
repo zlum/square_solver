@@ -10,6 +10,9 @@ TEST(CharStrInput, BigNumber)
 {
     BigNumberBuilder bnb;
 
+    bnb.appendChar('0');
+    bnb.appendChar('0');
+    bnb.appendChar('0');
     bnb.appendChar('9');
     bnb.appendChar('8');
     bnb.appendChar('0');
