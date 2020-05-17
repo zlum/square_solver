@@ -44,18 +44,22 @@ int main(int argc, char* argv[])
     // Create ProducerConsumer instances to read, solve and print
     // quadratic equations
     QuadReader reader(argc, argv, bufCoeffs, move(builderCoeff));
-    QuadSolver solver(bufCoeffs, bufEquation);
+    QuadSolver solver1(bufCoeffs, bufEquation);
+    QuadSolver solver2(bufCoeffs, bufEquation);
     QuadPrinter printer(bufEquation);
 
     // Start worker threads of producers and consumers
     reader.start();
-    solver.start();
+    solver1.start();
+    solver2.start();
     printer.start();
 
     // Stop threads after theirs work done
     reader.join();
-    solver.stopLater();
-    solver.join();
+    solver1.stopLater();
+    solver2.stopLater();
+    solver1.join();
+    solver2.join();
     printer.stopLater();
     printer.join();
 
