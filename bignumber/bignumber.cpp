@@ -251,18 +251,13 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
     num._sign = prodQuotSign(_sign, other._sign); // Determine sign
     num._fractPos = _fractPos + other._fractPos; // Determine decimal position
 
+    // Number of zeroes in the begining of fractional part that can be skipped
+    size_t skipZeroes = num._fractPos;
+
     // Multiply vectors. Additional digit will be written to (carry)
-    NumVector prod = prodOfVectors(_numIntPart, other._numIntPart, carry);
-
-    // NOTE: Zero cleaner
-    size_t zeroPos = trackZeroes(prod, 0);
-    size_t driftPos = min(zeroPos, num._fractPos);
-
-    num._numIntPart.insert(num._numIntPart.begin(),
-                           prod.begin() + driftPos, prod.end());
-    num._fractPos -= driftPos;
-
-//    num._numIntPart = prodOfVectors(_numIntPart, other._numIntPart, carry);
+    num._numIntPart = prodOfVectors(_numIntPart, other._numIntPart,
+                                    carry, skipZeroes);
+    num._fractPos -= num._fractPos - skipZeroes;
 
     if(carry != 0)
     {

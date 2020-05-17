@@ -121,9 +121,8 @@ NumVector numVector::diffOfVectors(const NumVector& lNum,
     return diffNum;
 }
 
-NumVector numVector::prodOfVectors(const NumVector& lNum,
-                                         const NumVector& rNum,
-                                         Element& carry)
+NumVector numVector::prodOfVectors(const NumVector& lNum, const NumVector& rNum,
+                                   Element& carry, size_t& skipZeroes)
 {
     NumVector prodNum; // Result dummy
     size_t rShift = 0; // Shift of right number in sum to shape correct column
@@ -134,9 +133,17 @@ NumVector numVector::prodOfVectors(const NumVector& lNum,
     // Multiply vectors with column-like multiplication
     for(const auto& next : rNum)
     {
-        size_t skipZeroes = 0;
+        // Number of zeroes in the begining that can be skipped
+        // Only 0 and 1 values are significant cause of multiplication rules
+        size_t zeroesTmp = 0;
+
+        if(skipZeroes > rShift)
+        {
+            zeroesTmp = skipZeroes;
+        }
+
         prodNum = sumOfVectors(prodNum, prodHelperMultiply(lNum, next),
-                               carry, 0, rShift, skipZeroes);
+                               carry, 0, rShift, zeroesTmp);
 
         if(carry != 0)
         {
@@ -144,7 +151,15 @@ NumVector numVector::prodOfVectors(const NumVector& lNum,
             carry = 0;
         }
 
-        ++rShift;
+        // Notify if zero were skipped
+        if(skipZeroes > rShift && zeroesTmp != skipZeroes)
+        {
+            skipZeroes = zeroesTmp;
+        }
+        else
+        {
+            ++rShift;
+        }
     }
 
     return prodNum;

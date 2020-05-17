@@ -56,9 +56,28 @@ TEST(ProdQuat, BigNumber)
     bnb.appendStr("680.4");
     BigNumber test2{bnb.build()};
 
-    BigNumber testProd{test1 * test2};
+    bnb.appendStr("2");
+    BigNumber test3{bnb.build()};
 
-    EXPECT_EQ(test1, testProd / test2);
+    bnb.appendStr("25674.5");
+    BigNumber test4{bnb.build()};
+
+    bnb.appendStr("51349");
+    BigNumber test5{bnb.build()};
+
+    bnb.appendStr("25674.0000005");
+    BigNumber test6{bnb.build()};
+
+    bnb.appendStr("51348.000001");
+    BigNumber test7{bnb.build()};
+
+    BigNumber testProd1{test1 * test2};
+    BigNumber testProd2{test3 * test4};
+    BigNumber testProd3{test3 * test6};
+
+    EXPECT_EQ(test1, testProd1 / test2);
+    EXPECT_EQ(test3, testProd2 / test4);
+    EXPECT_EQ(test7, testProd3);
 }
 
 TEST(SumProd, BigNumber)

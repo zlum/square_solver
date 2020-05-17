@@ -25,9 +25,8 @@ namespace numVector
                                               size_t rShift);
 
     // Calcs product of vectors. Additional digit will be written to (carry)
-    NumVector prodOfVectors(const NumVector& lNum,
-                                              const NumVector& rNum,
-                                              Element& carry);
+    NumVector prodOfVectors(const NumVector& lNum, const NumVector& rNum,
+                            Element& carry, size_t& skipZeroes);
 
     NumVector prodHelperMultiply(const NumVector& lNum,
                                                    Element multiplier);
