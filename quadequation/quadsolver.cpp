@@ -65,7 +65,7 @@ BigNumber QuadSolver::calcRoot(const BigNumber& sqrtDsc, bool isNegative,
                                const BigNumber& a, const BigNumber& b)
 {
     // Create static object to use as integer literal
-    static const BigNumber Big2{{2}, 0, Sign::positive, Status::normal};
+    static const BigNumber Big2{"2"};
 
     return (-b + (isNegative ? -sqrtDsc : sqrtDsc)) / (Big2 * a);
 }
@@ -73,8 +73,8 @@ BigNumber QuadSolver::calcRoot(const BigNumber& sqrtDsc, bool isNegative,
 QuadRoots QuadSolver::calcRoots(const QuadCoeffs& coeffs)
 {
     // Create static object to use as integer literal
-    static const BigNumber Big4{{4}, 0, Sign::positive, Status::normal};
-    static const BigNumber BigNaN{{}, 0, Sign::positive, Status::nan};
+    static const BigNumber Big4{"4"};
+    static const BigNumber BigNaN{Sign::positive, Status::nan};
 
     // Get aliases for convenience
     const BigNumber& a = coeffs.at(0);

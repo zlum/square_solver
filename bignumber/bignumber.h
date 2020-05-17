@@ -4,13 +4,20 @@
 #include "numvector.h"
 
 #include <iostream>
+#include <string>
 
 class BigNumber final
 {
-public:
-    explicit BigNumber();
+    // Any non-zero normal numbers have to be constructed with BigNumberBuilder
+    friend class BigNumberBuilder;
     explicit BigNumber(numVector::NumVector numIntPart, size_t fractPos,
                        bigNumber::Sign sign, bigNumber::Status status);
+
+public:
+    explicit BigNumber(); // Positive zero
+    explicit BigNumber(bigNumber::Sign sign, bigNumber::Status status);
+    // Ctor pass (num) to BigNumberBuilder to create number
+    explicit BigNumber(const std::string& num);
 
     // Check if number == 0
     bool isZero() const;

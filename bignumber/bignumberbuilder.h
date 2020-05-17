@@ -5,13 +5,12 @@
 
 #include <cstdint>
 #include <string>
-#include <vector>
 
 class BigNumberBuilder
 {
 public:
     explicit BigNumberBuilder();
-//    virtual ~BigNumberBuilder();
+    virtual ~BigNumberBuilder() = default;
 
     // Add a character to the end of number if it is possible
     bool appendChar(char symbol);

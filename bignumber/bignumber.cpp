@@ -1,5 +1,6 @@
 #include "bignumber.h"
 
+#include "bignumberbuilder.h"
 #include "numvector.h"
 
 #include <algorithm>
@@ -13,13 +14,6 @@ using namespace std;
 using namespace bigNumber;
 using namespace numVector;
 
-BigNumber::BigNumber():
-    _fractPos(0),
-    _sign(Sign::positive),
-    _status(Status::normal)
-{
-}
-
 BigNumber::BigNumber(NumVector numIntPart, size_t fractPos,
                      Sign sign, Status status):
     _number(move(numIntPart)),
@@ -27,6 +21,30 @@ BigNumber::BigNumber(NumVector numIntPart, size_t fractPos,
     _sign(sign),
     _status(status)
 {
+}
+
+BigNumber::BigNumber():
+    _fractPos(0),
+    _sign(Sign::positive),
+    _status(Status::normal)
+{
+}
+
+BigNumber::BigNumber(bigNumber::Sign sign, Status status):
+    _fractPos(0),
+    _sign(sign),
+    _status(status)
+{
+}
+
+BigNumber::BigNumber(const string& num):
+    BigNumber()
+{
+    BigNumberBuilder builder;
+
+    builder.appendStr(num);
+
+    *this = builder.build();
 }
 
 bool BigNumber::isZero() const
