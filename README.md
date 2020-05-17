@@ -26,3 +26,6 @@ Any other symbols or numbers out of boundaries will be ignored.
 
 * Output sample:
 (1.32 -44 8) => (0.182820886110124552153889643102, 33.150512447223208781179443690232)
+
+* Run test
+ctest
