@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-class BigNumber final
+class BigNumber
 {
     // Any non-zero normal numbers have to be constructed with BigNumberBuilder
     friend class BigNumberBuilder;
@@ -18,6 +18,7 @@ public:
     explicit BigNumber(bigNumber::Sign sign, bigNumber::Status status);
     // Ctor pass (num) to BigNumberBuilder to create number
     explicit BigNumber(const std::string& num);
+    ~BigNumber() = default;
 
     // Check if number == 0
     bool isZero() const;

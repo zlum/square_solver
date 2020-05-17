@@ -9,6 +9,7 @@ class BigNumberBuilder
 {
 public:
     explicit BigNumberBuilder();
+    // Interface may be added
     virtual ~BigNumberBuilder() = default;
 
     // Add a character to the end of number if it is possible

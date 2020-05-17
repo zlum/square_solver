@@ -8,7 +8,6 @@
 #include <memory>
 #include <stdexcept>
 
-// TODO: Replace with Coeff builder
 class BigNumberBuilder;
 
 // Reads coefficients from cli, stores to task and writes

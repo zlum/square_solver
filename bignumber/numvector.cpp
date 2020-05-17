@@ -237,7 +237,8 @@ NumVector numVector::quotOfVectors(const NumVector& lNum, const NumVector& rNum,
     size_t i = dividend.size();
 
     // Divide vectors with column-like division
-    while(true) // FIXME: ouf
+    // Escape on completing division or limit reaching
+    while(true)
     {
         if(quotHelperLess(dividend, divisor))
         {

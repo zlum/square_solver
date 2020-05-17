@@ -37,7 +37,8 @@ int main(int argc, char* argv[])
     auto bufCoeffs = make_shared<Buffer<unique_ptr<QuadCoeffs>>>();
     auto bufEquation = make_shared<Buffer<unique_ptr<QuadEquation>>>();
 
-    //
+    // Create unique builder for QuadReader
+    // Pointer may be replaced with interface
     auto builderCoeff = make_unique<BigNumberBuilder>();
 
     // Create ProducerConsumer instances to read, solve and print

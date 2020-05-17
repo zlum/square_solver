@@ -9,7 +9,7 @@
 
 // Thread-safe task queue
 template<typename Task>
-class Buffer final
+class Buffer
 {
 public:
     explicit Buffer() = default;
