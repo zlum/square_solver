@@ -4,6 +4,8 @@ project(square_solver)
 
 find_package(Threads REQUIRED)
 
+include(CTest)
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -47,6 +49,8 @@ set(SRC
     ${QUADEQUATION}
     main.cpp
 )
+
+add_subdirectory(test)
 
 add_executable(${PROJECT_NAME}
     ${SRC}
