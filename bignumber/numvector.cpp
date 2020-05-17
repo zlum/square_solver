@@ -5,11 +5,8 @@
 using namespace numVector;
 using namespace std;
 
-NumVector numVector::sumOfVectors(const NumVector& lNum,
-                                  const NumVector& rNum,
-                                  Element& carry,
-                                  size_t lShift,
-                                  size_t rShift,
+NumVector numVector::sumOfVectors(const NumVector& lNum, const NumVector& rNum,
+                                  Element& carry, size_t lShift, size_t rShift,
                                   size_t& skipZeroes)
 {
     // Sum vectors. Additional digit will be written to (carry)
@@ -62,11 +59,8 @@ NumVector numVector::sumOfVectors(const NumVector& lNum,
     return sumNum;
 }
 
-NumVector numVector::diffOfVectors(const NumVector& lNum,
-                                         const NumVector& rNum,
-                                         Element& carry,
-                                         size_t lShift,
-                                         size_t rShift)
+NumVector numVector::diffOfVectors(const NumVector& lNum, const NumVector& rNum,
+                                   Element& carry, size_t lShift, size_t rShift)
 {
     // Subtract vectors. Additional digit will be written to (carry)
     NumVector diffNum; // Result dummy
@@ -166,7 +160,7 @@ NumVector numVector::prodOfVectors(const NumVector& lNum, const NumVector& rNum,
 }
 
 NumVector numVector::prodHelperMultiply(const NumVector& lNum,
-                                              Element multiplier)
+                                        Element multiplier)
 {
     // Multiply vector by (multiplier)
     NumVector prodVec; // Result dummy
@@ -201,12 +195,9 @@ NumVector numVector::prodHelperMultiply(const NumVector& lNum,
     return prodVec;
 }
 
-NumVector numVector::quotOfVectors(const NumVector& lNum,
-                                         const NumVector& rNum,
-                                         size_t lShift,
-                                         size_t rShift,
-                                         size_t precision,
-                                         size_t& decPos)
+NumVector numVector::quotOfVectors(const NumVector& lNum, const NumVector& rNum,
+                                   size_t lShift, size_t rShift,
+                                   size_t precision, size_t& decPos)
 {
     NumVector quotNum; // Result dummy
     size_t lAddShift = 0;
@@ -332,8 +323,7 @@ NumVector numVector::quotOfVectors(const NumVector& lNum,
     return quotNum;
 }
 
-bool numVector::quotHelperLess(const NumVector& lNum,
-                               const NumVector& rNum)
+bool numVector::quotHelperLess(const NumVector& lNum, const NumVector& rNum)
 {
     // Check if left vector number less than the right one
     // Vactors have to be prepared in quotOfVectors() function
@@ -376,8 +366,7 @@ bool numVector::quotHelperLess(const NumVector& lNum,
     return false;
 }
 
-void numVector::quotHelperSubtract(NumVector& lNum,
-                                   const NumVector& rNum,
+void numVector::quotHelperSubtract(NumVector& lNum, const NumVector& rNum,
                                    size_t rShift)
 {
     // Subtract right vector from the left inplace
@@ -435,11 +424,9 @@ void numVector::quotHelperSubtract(NumVector& lNum,
     }
 }
 
-bool numVector::compareOfVectors(const NumVector& lNum,
-                                size_t lFractPos,
-                                const NumVector& rNum,
-                                size_t rFractPos,
-                                const function<bool(int, int)>& functor)
+bool numVector::compareOfVectors(const NumVector& lNum, size_t lFractPos,
+                                 const NumVector& rNum, size_t rFractPos,
+                                 const function<bool(int, int)>& functor)
 {
     // If sizes of vector's integer part are different then numbers too
     // It is valid because insignificant digits not presented in vector

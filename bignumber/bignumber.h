@@ -52,8 +52,8 @@ private:
 private:
     // Number of digits after decimal separator for round() and arithmetics
     static constexpr size_t _precision = 30;
-    numVector::NumVector _numIntPart; // TODO: Rename
-    size_t _fractPos;
-    bigNumber::Sign _sign;
-    bigNumber::Status _status;
+    numVector::NumVector _number; // Number without insignificat zeroes
+    size_t _fractPos; // Decimal point position (0 for integer)
+    bigNumber::Sign _sign; // +/-
+    bigNumber::Status _status; // Inf, NaN, Normal
 };

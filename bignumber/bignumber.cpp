@@ -20,11 +20,9 @@ BigNumber::BigNumber():
 {
 }
 
-BigNumber::BigNumber(NumVector numIntPart,
-                     size_t fractPos,
-                     Sign sign,
-                     Status status):
-    _numIntPart(move(numIntPart)),
+BigNumber::BigNumber(NumVector numIntPart, size_t fractPos,
+                     Sign sign, Status status):
+    _number(move(numIntPart)),
     _fractPos(fractPos),
     _sign(sign),
     _status(status)
@@ -41,7 +39,7 @@ bool BigNumber::isZero() const
 
     // Going from most significant digit
     // Always need only one step to get answer
-    for(auto it = _numIntPart.rbegin(); it != _numIntPart.rend(); ++it)
+    for(auto it = _number.rbegin(); it != _number.rend(); ++it)
     {
         if(*it != 0)
         {
@@ -73,7 +71,7 @@ BigNumber BigNumber::sqrt() const
     // Result is NaN if number <= 0
     if(_sign == Sign::negative || isZero())
     {
-        return BigNumber{_numIntPart, _fractPos, _sign, Status::nan};
+        return BigNumber{_number, _fractPos, _sign, Status::nan};
     }
 
     // Newton's method
@@ -93,7 +91,7 @@ BigNumber BigNumber::sqrt() const
     size_t i = 0;
     size_t approxNum = min(size_t(maxApproxNum),
                            max(size_t(minApproxNum),
-                               _numIntPart.size() * approxStepPerNum));
+                               _number.size() * approxStepPerNum));
 
     do
     {
@@ -108,39 +106,45 @@ BigNumber BigNumber::sqrt() const
 
 BigNumber BigNumber::round() const
 {
+    // Only normal numbers can be rounded
     if(_status != Status::normal)
     {
         return *this;
     }
 
+    // Rounding not required
     if(_fractPos <= _precision)
     {
         return *this;
     }
 
+    // Determine rounding position and digit for rounding to the greater value
     size_t pos = _fractPos - _precision;
     size_t digitPos = pos - 1;
     size_t digit;
 
-    if(digitPos < _numIntPart.size())
+    if(digitPos < _number.size())
     {
-        digit = _numIntPart.at(digitPos);
+        digit = _number.at(digitPos);
     }
     else
     {
+        // All significant values are rounded
         return BigNumber{{}, 0, _sign, _status};
     }
 
     NumVector num;
-    num.insert(num.begin(), _numIntPart.begin() + pos, _numIntPart.end());
-    size_t numFractPos = _fractPos - (_numIntPart.size() - num.size());
+    num.insert(num.begin(), _number.begin() + pos, _number.end());
+    size_t numFractPos = _fractPos - (_number.size() - num.size());
     BigNumber res{num, numFractPos, _sign, _status};
 
     if(digit < 5)
     {
+        // Rounding to the less value
         return res;
     }
 
+    // Rounding to the greater value
     BigNumber rounder{{1}, numFractPos, _sign, _status};
 
     return res + rounder;
@@ -255,13 +259,13 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
     size_t skipZeroes = num._fractPos;
 
     // Multiply vectors. Additional digit will be written to (carry)
-    num._numIntPart = prodOfVectors(_numIntPart, other._numIntPart,
+    num._number = prodOfVectors(_number, other._number,
                                     carry, skipZeroes);
     num._fractPos -= num._fractPos - skipZeroes;
 
     if(carry != 0)
     {
-        num._numIntPart.emplace_back(carry);
+        num._number.emplace_back(carry);
     }
 
     return num;
@@ -288,10 +292,10 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
     {
         if(isZero())
         {
-            return BigNumber{_numIntPart, _fractPos, sign, Status::nan};
+            return BigNumber{_number, _fractPos, sign, Status::nan};
         }
 
-        return BigNumber{_numIntPart, _fractPos, sign, Status::inf};
+        return BigNumber{_number, _fractPos, sign, Status::inf};
     }
 
     BigNumber num;
@@ -313,8 +317,8 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
     }
 
     // Multiply vectors. Decimal point position will be written to (decPos)
-    num._numIntPart = quotOfVectors(_numIntPart, other._numIntPart,
-                                    lShift, rShift, _precision, decPos);
+    num._number = quotOfVectors(_number, other._number,
+                                lShift, rShift, _precision, decPos);
     num._fractPos = decPos - lShift;
 
     return num;
@@ -340,8 +344,8 @@ bool BigNumber::operator >(const BigNumber& other) const
         return false;
     }
 
-    return compareOfVectors(_numIntPart, _fractPos,
-                           other._numIntPart, other._fractPos, greater<>());
+    return compareOfVectors(_number, _fractPos,
+                            other._number, other._fractPos, greater<>());
 }
 
 bool BigNumber::operator <(const BigNumber& other) const
@@ -364,8 +368,8 @@ bool BigNumber::operator <(const BigNumber& other) const
         return false;
     }
 
-    return compareOfVectors(_numIntPart, _fractPos,
-                           other._numIntPart, other._fractPos, less<>());
+    return compareOfVectors(_number, _fractPos,
+                            other._number, other._fractPos, less<>());
 }
 
 bool BigNumber::operator ==(const BigNumber& other) const
@@ -396,20 +400,19 @@ bool BigNumber::operator ==(const BigNumber& other) const
 
     // If sizes or decimal point positions different then numbers are different
     // It is valid because insignificant digits not presented in vector
-    if(_fractPos != other._fractPos ||
-       _numIntPart.size() != other._numIntPart.size())
+    if(_fractPos != other._fractPos || _number.size() != other._number.size())
     {
         return false;
     }
 
     // Comparison of digits from the most significant to the least
-    size_t i = _numIntPart.size();
+    size_t i = _number.size();
 
     while(i > 0)
     {
         --i;
 
-        if(_numIntPart.at(i) != other._numIntPart.at(i))
+        if(_number.at(i) != other._number.at(i))
         {
             return false;
         }
@@ -457,7 +460,7 @@ ostream& operator <<(ostream& os, const BigNumber& num)
     static const auto& loc = use_facet<numpunct<char>>(cout.getloc());
     size_t i;
 
-    if(num._fractPos >= num._numIntPart.size())
+    if(num._fractPos >= num._number.size())
     {
         // Output significant zero that not presented in vector
         os << '0';
@@ -466,7 +469,7 @@ ostream& operator <<(ostream& os, const BigNumber& num)
     }
     else
     {
-        i = num._numIntPart.size();
+        i = num._number.size();
     }
 
     // Output little-endian number
@@ -474,9 +477,9 @@ ostream& operator <<(ostream& os, const BigNumber& num)
     {
         --i;
 
-        if(i < num._numIntPart.size())
+        if(i < num._number.size())
         {
-            os << int(num._numIntPart.at(i));
+            os << int(num._number.at(i));
         }
         else
         {
@@ -518,14 +521,14 @@ BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
     size_t skipZeroes = num._fractPos;
 
     // Sum vectors. Additional digit will be written to (carry)
-    num._numIntPart = sumOfVectors(leftNum._numIntPart, rightNum._numIntPart,
-                                   carry, lShift, rShift, skipZeroes);
+    num._number = sumOfVectors(leftNum._number, rightNum._number,
+                               carry, lShift, rShift, skipZeroes);
 
     num._fractPos -= num._fractPos - skipZeroes;
 
     if(carry != 0)
     {
-        num._numIntPart.emplace_back(carry);
+        num._number.emplace_back(carry);
     }
 
     return num;
@@ -555,16 +558,14 @@ BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
     // Swap them and change result sign if necessary
     if(leftNum < rightNum)
     {
-        num._numIntPart = diffOfVectors(rightNum._numIntPart,
-                                        leftNum._numIntPart, narrower,
-                                        rShift, lShift);
+        num._number = diffOfVectors(rightNum._number, leftNum._number, narrower,
+                                    rShift, lShift);
         num._sign = Sign::negative;
     }
     else
     {
-        num._numIntPart = diffOfVectors(leftNum._numIntPart,
-                                        rightNum._numIntPart, narrower,
-                                        lShift, rShift);
+        num._number = diffOfVectors(leftNum._number, rightNum._number, narrower,
+                                    lShift, rShift);
     }
 
     return num;
