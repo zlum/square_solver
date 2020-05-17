@@ -266,26 +266,7 @@ BigNumber BigNumber::operator *(const BigNumber& other) const
         return other;
     }
 
-    BigNumber num; // Result dummy
-    Element carry = 0; // Increase number size or change next number digit
-
-    num._sign = prodQuotSign(_sign, other._sign); // Determine sign
-    num._fractPos = _fractPos + other._fractPos; // Determine decimal position
-
-    // Number of zeroes in the begining of fractional part that can be skipped
-    size_t skipZeroes = num._fractPos;
-
-    // Multiply vectors. Additional digit will be written to (carry)
-    num._number = prodOfVectors(_number, other._number,
-                                    carry, skipZeroes);
-    num._fractPos -= num._fractPos - skipZeroes;
-
-    if(carry != 0)
-    {
-        num._number.emplace_back(carry);
-    }
-
-    return num;
+    return multiply(*this, other);
 }
 
 BigNumber BigNumber::operator /(const BigNumber& other) const
@@ -301,44 +282,7 @@ BigNumber BigNumber::operator /(const BigNumber& other) const
         return other;
     }
 
-    Sign sign = prodQuotSign(_sign, other._sign); // Determine sign
-
-    // 0 / 0 == NaN, x / 0 == Inf
-    // Sign is correct for division operation. Other data same as (this)
-    if(other.isZero())
-    {
-        if(isZero())
-        {
-            return BigNumber{_number, _fractPos, sign, Status::nan};
-        }
-
-        return BigNumber{_number, _fractPos, sign, Status::inf};
-    }
-
-    BigNumber num;
-    size_t decPos = 0;
-    size_t lShift = 0;
-    size_t rShift = 0;
-
-    num._sign = sign;
-
-    // Determine shift to shape correct column
-    if(_fractPos > other._fractPos)
-    {
-        rShift = _fractPos - other._fractPos;
-    }
-
-    if(other._fractPos > _fractPos)
-    {
-        lShift = other._fractPos - _fractPos;
-    }
-
-    // Multiply vectors. Decimal point position will be written to (decPos)
-    num._number = quotOfVectors(_number, other._number,
-                                lShift, rShift, _precision, decPos);
-    num._fractPos = decPos - lShift;
-
-    return num;
+    return divide(*this, other);
 }
 
 bool BigNumber::operator >(const BigNumber& other) const
@@ -514,7 +458,7 @@ ostream& operator <<(ostream& os, const BigNumber& num)
     return os;
 }
 
-BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
+BigNumber BigNumber::sum(const BigNumber& lNum, const BigNumber& rNum)
 {
     // Sum two BigNumbers irrespective of sign or status
     BigNumber num;
@@ -523,22 +467,22 @@ BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
     size_t rShift = 0;
 
     // Determine shift to shape correct column
-    if(leftNum._fractPos > rightNum._fractPos)
+    if(lNum._fractPos > rNum._fractPos)
     {
-        rShift = leftNum._fractPos - rightNum._fractPos;
-        num._fractPos = leftNum._fractPos;
+        rShift = lNum._fractPos - rNum._fractPos;
+        num._fractPos = lNum._fractPos;
     }
     else
     {
-        lShift = rightNum._fractPos - leftNum._fractPos;
-        num._fractPos = rightNum._fractPos;
+        lShift = rNum._fractPos - lNum._fractPos;
+        num._fractPos = rNum._fractPos;
     }
 
     // Number of zeroes in the begining of fractional part that can be skipped
     size_t skipZeroes = num._fractPos;
 
     // Sum vectors. Additional digit will be written to (carry)
-    num._number = sumOfVectors(leftNum._number, rightNum._number,
+    num._number = sumOfVectors(lNum._number, rNum._number,
                                carry, lShift, rShift, skipZeroes);
 
     num._fractPos -= num._fractPos - skipZeroes;
@@ -551,7 +495,7 @@ BigNumber BigNumber::sum(const BigNumber& leftNum, const BigNumber& rightNum)
     return num;
 }
 
-BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
+BigNumber BigNumber::diff(const BigNumber& lNum, const BigNumber& rNum)
 {
     // Subtract right BigNumber from the left one
     BigNumber num;
@@ -560,30 +504,99 @@ BigNumber BigNumber::diff(const BigNumber& leftNum, const BigNumber& rightNum)
     size_t rShift = 0;
 
     // Determine shift to shape correct column
-    if(leftNum._fractPos > rightNum._fractPos)
+    if(lNum._fractPos > rNum._fractPos)
     {
-        rShift = leftNum._fractPos - rightNum._fractPos;
-        num._fractPos = leftNum._fractPos;
+        rShift = lNum._fractPos - rNum._fractPos;
+        num._fractPos = lNum._fractPos;
     }
     else
     {
-        lShift = rightNum._fractPos - leftNum._fractPos;
-        num._fractPos = rightNum._fractPos;
+        lShift = rNum._fractPos - lNum._fractPos;
+        num._fractPos = rNum._fractPos;
     }
 
     // Lesser vector must been subtracted from the greater one
     // Swap them and change result sign if necessary
-    if(leftNum < rightNum)
+    if(lNum < rNum)
     {
-        num._number = diffOfVectors(rightNum._number, leftNum._number, narrower,
+        num._number = diffOfVectors(rNum._number, lNum._number, narrower,
                                     rShift, lShift);
         num._sign = Sign::negative;
     }
     else
     {
-        num._number = diffOfVectors(leftNum._number, rightNum._number, narrower,
+        num._number = diffOfVectors(lNum._number, rNum._number, narrower,
                                     lShift, rShift);
     }
+
+    return num;
+}
+
+BigNumber BigNumber::multiply(const BigNumber& lNum,
+                              const BigNumber& rNum)
+{
+    BigNumber num; // Result dummy
+    Element carry = 0; // Increase number size or change next number digit
+
+    // Determine sign
+    num._sign = prodQuotSign(lNum._sign, rNum._sign);
+    // Determine decimal position
+    num._fractPos = lNum._fractPos + rNum._fractPos;
+
+    // Number of zeroes in the begining of fractional part that can be skipped
+    size_t skipZeroes = num._fractPos;
+
+    // Multiply vectors. Additional digit will be written to (carry)
+    num._number = prodOfVectors(lNum._number, rNum._number, carry, skipZeroes);
+
+    num._fractPos -= num._fractPos - skipZeroes;
+
+    if(carry != 0)
+    {
+        num._number.emplace_back(carry);
+    }
+
+    return num;
+}
+
+BigNumber BigNumber::divide(const BigNumber& lNum, const BigNumber& rNum)
+{
+    Sign sign = prodQuotSign(lNum._sign, rNum._sign); // Determine sign
+
+    // 0 / 0 == NaN, x / 0 == Inf
+    // Sign is correct for division operation. Other data same as (this)
+    if(rNum.isZero())
+    {
+        if(lNum.isZero())
+        {
+            return BigNumber{lNum._number, lNum._fractPos, sign, Status::nan};
+        }
+
+        return BigNumber{lNum._number, lNum._fractPos, sign, Status::inf};
+    }
+
+    BigNumber num;
+    size_t decPos = 0;
+    size_t lShift = 0;
+    size_t rShift = 0;
+
+    num._sign = sign;
+
+    // Determine shift to shape correct column
+    if(lNum._fractPos > rNum._fractPos)
+    {
+        rShift = lNum._fractPos - rNum._fractPos;
+    }
+
+    if(rNum._fractPos > lNum._fractPos)
+    {
+        lShift = rNum._fractPos - lNum._fractPos;
+    }
+
+    // Multiply vectors. Decimal point position will be written to (decPos)
+    num._number = quotOfVectors(lNum._number, rNum._number, lShift, rShift,
+                                _precision, decPos);
+    num._fractPos = decPos - lShift;
 
     return num;
 }

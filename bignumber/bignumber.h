@@ -49,9 +49,14 @@ public:
 
 private:
     // Sum two BigNumbers irrespective of sign or status
-    static BigNumber sum(const BigNumber& leftNum, const BigNumber& rightNum);
-    // Subtract two BigNumbers
-    static BigNumber diff(const BigNumber& leftNum, const BigNumber& rightNum);
+    static BigNumber sum(const BigNumber& lNum, const BigNumber& rNum);
+    // Subtract two BigNumbers irrespective of status ONLY
+    static BigNumber diff(const BigNumber& lNum, const BigNumber& rNum);
+    // Multiply two BigNumbers irrespective of sign or status
+    static BigNumber multiply(const BigNumber& lNum, const BigNumber& rNum);
+    // Divide two BigNumbers irrespective of sign or status
+    static BigNumber divide(const BigNumber& lNum, const BigNumber& rNum);
+
     // Determine sign of a product or quotient
     static bigNumber::Sign prodQuotSign(const bigNumber::Sign& lSign,
                                         const bigNumber::Sign& rSign);
