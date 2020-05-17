@@ -150,20 +150,20 @@ BigNumber BigNumber::round() const
         return BigNumber{_sign, _status};
     }
 
+    // (rounderDigit) will be added to vector to rounding
+    Element rounderDigit = digit < 5 ? 0 : 1;
     NumVector num;
+
+    // Shape shrinked number
     num.insert(num.begin(), _number.begin() + pos, _number.end());
+
     size_t numFractPos = _fractPos - (_number.size() - num.size());
     BigNumber res{num, numFractPos, _sign, _status};
 
-    if(digit < 5)
-    {
-        // Rounding to the less value
-        return res;
-    }
+    // Rounding to the nearest value
+    BigNumber rounder{{rounderDigit}, numFractPos, _sign, _status};
 
-    // Rounding to the greater value
-    BigNumber rounder{{1}, numFractPos, _sign, _status};
-
+    // Have to use sum in any case because of getting rid of zeroes
     return res + rounder;
 }
 
