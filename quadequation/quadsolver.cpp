@@ -2,12 +2,13 @@
 
 #include <cmath>
 #include <limits>
+#include <utility>
 
 using namespace bigNumber;
 using namespace std;
 
-QuadSolver::QuadSolver(shared_ptr<Buffer<QuadCoeffs>> inputBuf,
-                       shared_ptr<Buffer<QuadEquation>> outputBuf):
+QuadSolver::QuadSolver(shared_ptr<Buffer<unique_ptr<QuadCoeffs>>> inputBuf,
+                       shared_ptr<Buffer<unique_ptr<QuadEquation>>> outputBuf):
     _inputBuf(inputBuf),
     _outputBuf(outputBuf)
 {
@@ -35,27 +36,22 @@ void QuadSolver::worker()
 
     while(true)
     {
-        QuadEquation equation;
-        QuadCoeffs coeffs;
+        unique_ptr<QuadCoeffs> coeffs = _inputBuf->getAndPop(workFlag);
 
-        try
+        if(coeffs == nullptr)
         {
-            coeffs = _inputBuf->getAndPop(workFlag);
-        }
-        catch(...)
-        {
+            // Interrupt called
             break;
         }
 
-        equation.coeffs = coeffs;
-        equation.roots = calcRoots(coeffs);
+        auto equation = make_unique<QuadEquation>();
+        // TODO: Check
+        equation->coeffs = move(*coeffs);
+        equation->roots = calcRoots(equation->coeffs);
 
-        try
+        if(!_outputBuf->emplace(move(equation), workFlag))
         {
-            _outputBuf->emplace(equation, workFlag);
-        }
-        catch(...)
-        {
+            // Interrupt called
             break;
         }
     }

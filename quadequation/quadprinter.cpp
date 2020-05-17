@@ -6,7 +6,7 @@
 using namespace bigNumber;
 using namespace std;
 
-QuadPrinter::QuadPrinter(shared_ptr<Buffer<QuadEquation>> inputBuf):
+QuadPrinter::QuadPrinter(shared_ptr<Buffer<unique_ptr<QuadEquation>>> inputBuf):
     _buf(inputBuf)
 {
 }
@@ -30,18 +30,16 @@ void QuadPrinter::worker()
     // Returns if stopLater() had been called and input buffer is empty
     while(true)
     {
-        QuadEquation equation;
+        unique_ptr<QuadEquation> equation = _buf->getAndPop(getWorkFlag());
 
-        try
+        if(equation == nullptr)
         {
-            equation = _buf->getAndPop(getWorkFlag());
-        }
-        catch(...)
-        {
+            // Interrupt called
             break;
         }
 
-        printQuadEquation(equation);
+        // TODO: Check
+        printQuadEquation(*equation);
     }
 }
 

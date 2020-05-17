@@ -5,16 +5,17 @@
 #include <algorithm>
 #include <exception>
 #include <string>
+#include <utility>
 
 using namespace bigNumber;
 using namespace std;
 
 QuadReader::QuadReader(int argc, char* argv[],
-                       shared_ptr<Buffer<QuadCoeffs>> outputBuf,
+                       shared_ptr<Buffer<unique_ptr<QuadCoeffs>>> outputBuf,
                        unique_ptr<BigNumberBuilder> coeffBuilder):
     _argc(argc),
     _argv(argv),
-    _buf(outputBuf),
+    _buf(outputBuf), // TODO: Check
     _builder(move(coeffBuilder))
 {
 }
@@ -42,23 +43,33 @@ void QuadReader::worker()
 
     while(arg < size_t(_argc))
     {
+        unique_ptr<QuadCoeffs> coeffs;
+
         try
         {
-            _buf->emplace(readCoeffs(arg, pos), getWorkFlag());
+            coeffs = readCoeffs(arg, pos);
         }
         catch(const OverflowException&)
         {
-            // Skip suspicious argument
+            // Skip suspicious argument that caused overflow
             ++arg;
             pos = 0;
         }
+
+        if(coeffs == nullptr)
+        {
+            // Couldn`t get correct input
+            break;
+        }
+
+        _buf->emplace(move(coeffs), getWorkFlag());
     }
 }
 
-QuadCoeffs QuadReader::readCoeffs(size_t& arg, size_t& pos)
+unique_ptr<QuadCoeffs> QuadReader::readCoeffs(size_t& arg, size_t& pos)
 {
     size_t i = 0; // Counter of correctly read values
-    QuadCoeffs coeffs;
+    auto coeffs = make_unique<QuadCoeffs>();
 
     _builder->clear(); // Prepare builder
 
@@ -78,7 +89,7 @@ QuadCoeffs QuadReader::readCoeffs(size_t& arg, size_t& pos)
         {
             // Value had been read. Build number and go to the next
             pos += readNumber;
-            coeffs.at(i) = _builder->build();
+            coeffs->at(i) = _builder->build();
             ++i;
         }
 
@@ -99,7 +110,6 @@ QuadCoeffs QuadReader::readCoeffs(size_t& arg, size_t& pos)
         return coeffs;
     }
 
-    // FIXME: Throw my type
     // Couldn`t get correct input
-    throw runtime_error("Bad input");
+    return nullptr;
 }

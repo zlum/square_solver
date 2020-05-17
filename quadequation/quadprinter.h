@@ -12,7 +12,7 @@ class QuadPrinter:
         public ProducerConsumer
 {
 public:
-    explicit QuadPrinter(std::shared_ptr<Buffer<QuadEquation>> inputBuf);
+    explicit QuadPrinter(std::shared_ptr<Buffer<std::unique_ptr<QuadEquation>>> inputBuf);
     virtual ~QuadPrinter();
 
     // ProducerConsumer
@@ -27,5 +27,5 @@ private:
     static void printQuadEquation(const QuadEquation& equation);
 
 private:
-    std::shared_ptr<Buffer<QuadEquation>> _buf;
+    std::shared_ptr<Buffer<std::unique_ptr<QuadEquation>>> _buf;
 };

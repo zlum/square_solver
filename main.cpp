@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
 
     // Create shared buffer objects to transmit tasks
     // from producers to consumers
-    auto bufCoeffs = make_shared<Buffer<QuadCoeffs>>();
-    auto bufEquation = make_shared<Buffer<QuadEquation>>();
+    auto bufCoeffs = make_shared<Buffer<unique_ptr<QuadCoeffs>>>();
+    auto bufEquation = make_shared<Buffer<unique_ptr<QuadEquation>>>();
 
     //
     auto builderCoeff = make_unique<BigNumberBuilder>();

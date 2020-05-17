@@ -2,14 +2,14 @@
 
 #include <chrono>
 #include <condition_variable>
-#include <exception>
 #include <limits>
 #include <mutex>
 #include <queue>
+#include <utility>
 
 // Thread-safe task queue
 template<typename Task>
-class Buffer
+class Buffer final
 {
 public:
     explicit Buffer() = default;
@@ -24,7 +24,7 @@ public:
     }
 
     // Thread-safely adds task to the queue
-    void emplace(const Task& task, const bool& workFlag)
+    bool emplace(Task&& task, const bool& workFlag)
     {
         std::unique_lock<std::mutex> lock(_queueMtx);
 
@@ -34,17 +34,21 @@ public:
             // Interrupt operation if work flag is false
             if(!workFlag)
             {
-                throw std::runtime_error("Interrupted");
+                // Interrupt called. New tasks cannot be added
+                return false;
             }
 
             // Wait notification from getAndPop() or notifyAll()
             _queueFullCondVar.wait(lock);
         }
 
-        _taskQueue.emplace(task);
+        // TODO: Check
+        _taskQueue.emplace(std::forward<Task>(task));
         lock.unlock();
         // Notify thread holded into getAndPop()
         _queueEmptyCondVar.notify_one();
+
+        return true;
     }
 
     // Thread-safely gets front element and pops the queue
@@ -57,14 +61,16 @@ public:
         {
             if(!workFlag)
             {
-                throw std::runtime_error("Interrupted");
+                // Interrupt called
+                return nullptr;
             }
 
             // Wait notification from getAndPop() or notifyAll()
             _queueEmptyCondVar.wait(lock);
         }
 
-        Task val = _taskQueue.front();
+        // TODO: Check
+        Task val = move(_taskQueue.front());
         _taskQueue.pop();
         lock.unlock();
         // Notify thread holded into emplace()

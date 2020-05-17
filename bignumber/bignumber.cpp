@@ -147,7 +147,7 @@ BigNumber BigNumber::round() const
     else
     {
         // All significant values are rounded
-        return BigNumber{{}, 0, _sign, _status};
+        return BigNumber{_sign, _status};
     }
 
     NumVector num;
