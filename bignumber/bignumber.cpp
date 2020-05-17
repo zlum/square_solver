@@ -7,7 +7,6 @@
 #include <functional>
 #include <limits>
 #include <locale>
-#include <stdexcept>
 #include <utility>
 
 using namespace std;

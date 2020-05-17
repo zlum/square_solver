@@ -6,6 +6,7 @@
 #include <exception>
 #include <string>
 
+using namespace bigNumber;
 using namespace std;
 
 QuadReader::QuadReader(int argc, char* argv[],
@@ -45,9 +46,11 @@ void QuadReader::worker()
         {
             _buf->emplace(readCoeffs(arg, pos), getWorkFlag());
         }
-        catch(...)
+        catch(const OverflowException&)
         {
-            break;
+            // Skip suspicious argument
+            ++arg;
+            pos = 0;
         }
     }
 }

@@ -5,7 +5,6 @@
 #include <cmath>
 #include <limits>
 #include <locale>
-#include <stdexcept>
 
 using namespace bigNumber;
 using namespace numVector;
@@ -32,11 +31,9 @@ bool BigNumberBuilder::appendChar(char symbol)
 
     if(bool(isdigit(symbol)))
     {
-        // TODO: Max size constexpr
-        if(_dummyNum._number.size() >= SIZE_MAX - 1)
+        if(_dummyNum._number.size() >= MAX_SIZE)
         {
-            // FIXME: Throw my type
-            throw out_of_range("Number out of range");
+            throw OverflowException{};
         }
 
         _dummyNum._number.emplace_back(symbol - '0');

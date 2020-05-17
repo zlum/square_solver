@@ -6,6 +6,7 @@
 #include "quadtypes.h"
 
 #include <memory>
+#include <stdexcept>
 
 // TODO: Replace with Coeff builder
 class BigNumberBuilder;
