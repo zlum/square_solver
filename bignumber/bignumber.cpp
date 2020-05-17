@@ -492,6 +492,11 @@ BigNumber BigNumber::sum(const BigNumber& lNum, const BigNumber& rNum)
         num._number.emplace_back(carry);
     }
 
+    if(num._number.size() > MAX_SIZE)
+    {
+        throw OverflowException{};
+    }
+
     return num;
 }
 
@@ -529,6 +534,11 @@ BigNumber BigNumber::diff(const BigNumber& lNum, const BigNumber& rNum)
                                     lShift, rShift);
     }
 
+    if(num._number.size() > MAX_SIZE)
+    {
+        throw OverflowException{};
+    }
+
     return num;
 }
 
@@ -554,6 +564,11 @@ BigNumber BigNumber::multiply(const BigNumber& lNum,
     if(carry != 0)
     {
         num._number.emplace_back(carry);
+    }
+
+    if(num._number.size() > MAX_SIZE)
+    {
+        throw OverflowException{};
     }
 
     return num;
@@ -597,6 +612,11 @@ BigNumber BigNumber::divide(const BigNumber& lNum, const BigNumber& rNum)
     num._number = quotOfVectors(lNum._number, rNum._number, lShift, rShift,
                                 _precision, decPos);
     num._fractPos = decPos - lShift;
+
+    if(num._number.size() > MAX_SIZE)
+    {
+        throw OverflowException{};
+    }
 
     return num;
 }

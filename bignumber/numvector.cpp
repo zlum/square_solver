@@ -112,6 +112,9 @@ NumVector numVector::diffOfVectors(const NumVector& lNum, const NumVector& rNum,
     // Remove zeroes from the back of vector
     popZeroes(diffNum, diffNum.size());
 
+    // Shrink because a lot of unnecessary capacity may left
+    diffNum.shrink_to_fit();
+
     return diffNum;
 }
 
@@ -155,6 +158,9 @@ NumVector numVector::prodOfVectors(const NumVector& lNum, const NumVector& rNum,
             ++rShift;
         }
     }
+
+    // Shrink because a lot of unnecessary capacity may left
+    prodNum.shrink_to_fit();
 
     return prodNum;
 }
@@ -319,6 +325,9 @@ NumVector numVector::quotOfVectors(const NumVector& lNum, const NumVector& rNum,
 
     // Restore correct order
     reverse(quotNum.begin(), quotNum.end());
+
+    // Shrink because a lot of unnecessary capacity may left
+    quotNum.shrink_to_fit();
 
     return quotNum;
 }
