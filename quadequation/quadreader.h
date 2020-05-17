@@ -17,7 +17,8 @@ class QuadReader:
 {
 public:
     explicit QuadReader(int argc, char* argv[],
-                        std::shared_ptr<Buffer<std::unique_ptr<QuadCoeffs>>> outputBuf,
+                        std::shared_ptr<Buffer<std::unique_ptr<QuadCoeffs>>>
+                            outputBuf,
                         std::unique_ptr<BigNumberBuilder> coeffBuilder);
     virtual ~QuadReader();
 

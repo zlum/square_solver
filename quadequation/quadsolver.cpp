@@ -9,8 +9,8 @@ using namespace std;
 
 QuadSolver::QuadSolver(shared_ptr<Buffer<unique_ptr<QuadCoeffs>>> inputBuf,
                        shared_ptr<Buffer<unique_ptr<QuadEquation>>> outputBuf):
-    _inputBuf(inputBuf),
-    _outputBuf(outputBuf)
+    _inputBuf(move(inputBuf)),
+    _outputBuf(move(outputBuf))
 {
 }
 
@@ -44,8 +44,9 @@ void QuadSolver::worker()
             break;
         }
 
+        // Create equation
         auto equation = make_unique<QuadEquation>();
-        // TODO: Check
+
         equation->coeffs = move(*coeffs);
         equation->roots = calcRoots(equation->coeffs);
 

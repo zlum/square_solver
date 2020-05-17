@@ -13,8 +13,10 @@ class QuadSolver:
         public ProducerConsumer
 {
 public:
-    explicit QuadSolver(std::shared_ptr<Buffer<std::unique_ptr<QuadCoeffs>>> inputBuf,
-                        std::shared_ptr<Buffer<std::unique_ptr<QuadEquation>>> outputBuf);
+    explicit QuadSolver(std::shared_ptr<Buffer<std::unique_ptr<QuadCoeffs>>>
+                            inputBuf,
+                        std::shared_ptr<Buffer<std::unique_ptr<QuadEquation>>>
+                            outputBuf);
     virtual ~QuadSolver();
 
     virtual void stopLater() override;

@@ -15,7 +15,7 @@ QuadReader::QuadReader(int argc, char* argv[],
                        unique_ptr<BigNumberBuilder> coeffBuilder):
     _argc(argc),
     _argv(argv),
-    _buf(outputBuf), // TODO: Check
+    _buf(move(outputBuf)),
     _builder(move(coeffBuilder))
 {
 }

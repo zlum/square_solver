@@ -7,7 +7,7 @@ using namespace bigNumber;
 using namespace std;
 
 QuadPrinter::QuadPrinter(shared_ptr<Buffer<unique_ptr<QuadEquation>>> inputBuf):
-    _buf(inputBuf)
+    _buf(move(inputBuf))
 {
 }
 
@@ -38,7 +38,6 @@ void QuadPrinter::worker()
             break;
         }
 
-        // TODO: Check
         printQuadEquation(*equation);
     }
 }
