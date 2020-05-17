@@ -93,7 +93,7 @@ BigNumber BigNumber::sqrt() const
 
     // Newton's method
     // https://helloacm.com/coding-exercise-implement-integer-square-root-c-online-judge/
-    static const BigNumber Big0_5{{5}, 1, Sign::positive, Status::normal};
+    static const BigNumber Big0_5{"0.5"};
     BigNumber dividend = *this;
     BigNumber val = *this;
     BigNumber last;
