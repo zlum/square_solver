@@ -18,14 +18,14 @@ Run:
 Program can read any sequence numbers sepparated by space.
 Any other symbols or numbers out of boundaries will be ignored.
 
-* Manual input
-./square_solver 1.32 -44 8
+Manual input:
+* ./square_solver 1.32 -44 8
 
-* File input (There is a sample file into build directory)
-./square_solver $(cat inputsample)
+File input (there is a sample file into build directory):
+* ./square_solver $(cat inputsample)
 
-* Output sample:
-(1.32 -44 8) => (0.182820886110124552153889643102, 33.150512447223208781179443690232)
+Output sample:
+* (1.32 -44 8) => (0.182820886110124552153889643102, 33.150512447223208781179443690232)
 
-* Run test
-ctest
+Run test (temporary commented in main CMakeLists.txt):
+* ctest
