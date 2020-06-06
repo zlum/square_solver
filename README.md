@@ -22,7 +22,7 @@ Manual input:
 * ./square_solver 1.32 -44 8
 
 File input (there is a sample file into build directory):
-* ./square_solver $(cat inputsample)
+* ./square_solver "$(< inputsample)"
 
 Output sample:
 * (1.32 -44 8) => (0.182820886110124552153889643102, 33.150512447223208781179443690232)
